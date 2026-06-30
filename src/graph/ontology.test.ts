@@ -78,6 +78,29 @@ describe("OntologyRegistry", () => {
     expect(node.properties.name).toBe("Alice");
   });
 
+  it("defaults missing node properties to an empty object when type has none", () => {
+    const emptyRegistry = OntologyRegistry.parse({
+      nodeTypes: [{ id: "marker", name: "Marker" }],
+      edgeTypes: [],
+    });
+
+    const node = emptyRegistry.parseNode({
+      id: "1",
+      type: "marker",
+    });
+
+    expect(node.properties).toEqual({});
+  });
+
+  it("still requires declared properties when the properties field is omitted", () => {
+    expect(() =>
+      registry.parseNode({
+        id: "1",
+        type: "company",
+      }),
+    ).toThrow(/Missing required property/);
+  });
+
   it("rejects unknown node type", () => {
     expect(() =>
       registry.parseNode({
@@ -131,6 +154,33 @@ describe("OntologyRegistry", () => {
     );
 
     expect(edge.properties.since).toBe(2020);
+  });
+
+  it("defaults missing edge properties to an empty object when type has none", () => {
+    const relatedRegistry = OntologyRegistry.parse({
+      nodeTypes: [
+        { id: "person", name: "Person", properties: { name: "string" } },
+        { id: "company", name: "Company", properties: { name: "string" } },
+      ],
+      edgeTypes: [{ id: "related_to", name: "Related To", from: "person", to: "company" }],
+    });
+
+    const nodes = new Map<string, Node>([
+      ["p1", { id: "p1", type: "person", properties: { name: "Alice" } }],
+      ["c1", { id: "c1", type: "company", properties: { name: "Acme" } }],
+    ]);
+
+    const edge = relatedRegistry.parseEdge(
+      {
+        id: "e1",
+        type: "related_to",
+        from: "p1",
+        to: "c1",
+      },
+      nodes,
+    );
+
+    expect(edge.properties).toEqual({});
   });
 
   it("rejects mismatched edge endpoints", () => {

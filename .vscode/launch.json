@@ -20,6 +20,16 @@
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "skipFiles": ["<node_modules>/**", "<node_internals>/**"]
+    },
+    {
+      "name": "Test: Build DB",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/tests/setup/build-database.ts",
+      "runtimeArgs": ["--import", "tsx"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_modules>/**", "<node_internals>/**"]
     }
   ]
 }

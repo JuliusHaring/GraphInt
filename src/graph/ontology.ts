@@ -61,7 +61,7 @@ export type PropertyValue = z.infer<typeof PropertyValueSchema>;
 export const NodeTypeSchema = z.object({
   id: z.string(),
   name: z.string(),
-  properties: z.record(z.string(), PropertyTypeSchema),
+  properties: z.record(z.string(), PropertyTypeSchema).optional().default({}),
 });
 
 export const EdgeTypeSchema = z.object({
@@ -69,7 +69,7 @@ export const EdgeTypeSchema = z.object({
   name: z.string(),
   from: z.string(),
   to: z.string(),
-  properties: z.record(z.string(), PropertyTypeSchema),
+  properties: z.record(z.string(), PropertyTypeSchema).optional().default({}),
 });
 
 export const OntologySchema = z
@@ -128,7 +128,7 @@ export type EdgeType = z.infer<typeof EdgeTypeSchema>;
 export const NodeSchema = z.object({
   id: z.string(),
   type: z.string(),
-  properties: z.record(z.string(), PropertyValueSchema),
+  properties: z.record(z.string(), PropertyValueSchema).optional().default({}),
   embedding: z.array(z.number()).optional(),
 });
 
@@ -139,7 +139,7 @@ export const EdgeSchema = z.object({
   type: z.string(),
   from: z.string(),
   to: z.string(),
-  properties: z.record(z.string(), PropertyValueSchema),
+  properties: z.record(z.string(), PropertyValueSchema).optional().default({}),
   embedding: z.array(z.number()).optional(),
 });
 

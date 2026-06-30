@@ -35,7 +35,7 @@ export type GraphClientOptions = {
 export type CreateNodeInput = {
   id: string;
   type: string;
-  properties: Record<string, PropertyValue>;
+  properties?: Record<string, PropertyValue>;
 };
 
 export type EditNodeInput = {
@@ -49,7 +49,7 @@ export type CreateEdgeInput = {
   type: string;
   from: string;
   to: string;
-  properties: Record<string, PropertyValue>;
+  properties?: Record<string, PropertyValue>;
 };
 
 export type EditEdgeInput = {
@@ -126,7 +126,7 @@ export class GraphClient {
       this.ontologyRegistry.parseNode({
         id,
         type: input.type ?? existing.type,
-        properties: { ...existing.properties, ...input.properties },
+        properties: { ...(existing.properties ?? {}), ...(input.properties ?? {}) },
         ...(input.embedding ? { embedding: input.embedding } : {}),
       }),
       existing,
@@ -156,7 +156,7 @@ export class GraphClient {
           type: input.type ?? existing.type,
           from,
           to,
-          properties: { ...existing.properties, ...input.properties },
+          properties: { ...(existing.properties ?? {}), ...(input.properties ?? {}) },
           ...(input.embedding ? { embedding: input.embedding } : {}),
         },
         await this.loadNodesById([from, to]),

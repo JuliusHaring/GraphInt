@@ -1,15 +1,14 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 import { GraphClient, QueryMethod } from "../src/index.js";
 import { GeminiLLMProvider } from "../src/llm/gemini-llm-provider.js";
 import { SqliteStorageProvider } from "../src/storage/sqlite-storage-provider.js";
 import { createLogger } from "../src/utils/logger.js";
-import { marieCurieOntology } from "./fixtures/ontology.js";
-import { marieCurieEdges, marieCurieNodes } from "./fixtures/graph-seed.js";
+import { bibleOntology } from "./fixtures/ontology.js";
 import { judgeAnswer } from "./judge/llm-judge.js";
 import { EvalMetrics } from "./metrics.js";
-import { seedMarieCurieGraph } from "./setup/seed-database.js";
+import { BIBLE_DB_PATH } from "./setup/paths.js";
 
 type GoldenCase = {
   id: string;
@@ -25,10 +24,12 @@ type GoldenFile = {
 const log = createLogger("graph-eval");
 const metrics = new EvalMetrics();
 const hasApiKey = Boolean(process.env.GOOGLE_API_KEY);
-const goldenPath = resolve(process.cwd(), "tests/golden/marie-curie.json");
+const dbPath = resolve(process.cwd(), BIBLE_DB_PATH);
+const hasDatabase = existsSync(dbPath);
+const goldenPath = resolve(process.cwd(), "tests/golden/bible.json");
 const goldenCases = JSON.parse(readFileSync(goldenPath, "utf8")) as GoldenFile;
 
-describe.runIf(hasApiKey)("graph golden eval", () => {
+describe.runIf(hasApiKey && hasDatabase)("graph golden eval", () => {
   const llmProvider = new GeminiLLMProvider({
     apiKey: process.env.GOOGLE_API_KEY || "",
     model: process.env.GRAPHINT_EVAL_MODEL || "gemini-3.1-flash-lite",
@@ -36,19 +37,10 @@ describe.runIf(hasApiKey)("graph golden eval", () => {
   });
 
   const client = new GraphClient({
-    storageProvider: new SqliteStorageProvider(":memory:"),
+    storageProvider: new SqliteStorageProvider(dbPath),
     llmProvider,
-    ontology: marieCurieOntology,
-    enableEmbedding: true,
-  });
-
-  beforeAll(async () => {
-    log.info("Seeding in-memory database");
-    await seedMarieCurieGraph(client);
-    log.info("Database ready", {
-      nodes: marieCurieNodes.length,
-      edges: marieCurieEdges.length,
-    });
+    ontology: bibleOntology,
+    enableEmbedding: false,
   });
 
   afterAll(() => {
@@ -82,9 +74,14 @@ describe.runIf(hasApiKey)("graph golden eval", () => {
   }
 });
 
-describe.runIf(!hasApiKey)("graph golden eval", () => {
-  it("skips when GOOGLE_API_KEY is missing", () => {
-    log.warn("Skipping LLM judge eval — set GOOGLE_API_KEY to run");
+describe.runIf(!hasApiKey || !hasDatabase)("graph golden eval", () => {
+  it("skips when prerequisites are missing", () => {
+    if (!hasApiKey) {
+      log.warn("Skipping LLM judge eval — set GOOGLE_API_KEY to run");
+    }
+    if (!hasDatabase) {
+      log.warn("Skipping LLM judge eval — run npm run test:build-db to build tests/data/bible-graph.db");
+    }
     expect(true).toBe(true);
   });
 });
