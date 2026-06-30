@@ -17,6 +17,23 @@ export class MemoryStorageProvider extends BaseStorageProvider {
     return Promise.all(ids.map((id) => this.getNode(id)));
   }
 
+  createNode(node: Node): Promise<void> {
+    if (this.nodes.some((existing) => existing.id === node.id)) {
+      throw new Error(`Node with id "${node.id}" already exists`);
+    }
+    this.nodes.push(node);
+    return Promise.resolve();
+  }
+
+  updateNode(node: Node): Promise<void> {
+    const index = this.nodes.findIndex((existing) => existing.id === node.id);
+    if (index === -1) {
+      throw new Error(`Node with id "${node.id}" not found`);
+    }
+    this.nodes[index] = node;
+    return Promise.resolve();
+  }
+
   upsertNode(node: Node): Promise<void> {
     const index = this.nodes.findIndex((existing) => existing.id === node.id);
     if (index === -1) {
@@ -42,6 +59,23 @@ export class MemoryStorageProvider extends BaseStorageProvider {
 
   getEdges(ids: string[]): Promise<Edge[]> {
     return Promise.all(ids.map((id) => this.getEdge(id)));
+  }
+
+  createEdge(edge: Edge): Promise<void> {
+    if (this.edges.some((existing) => existing.id === edge.id)) {
+      throw new Error(`Edge with id "${edge.id}" already exists`);
+    }
+    this.edges.push(edge);
+    return Promise.resolve();
+  }
+
+  updateEdge(edge: Edge): Promise<void> {
+    const index = this.edges.findIndex((existing) => existing.id === edge.id);
+    if (index === -1) {
+      throw new Error(`Edge with id "${edge.id}" not found`);
+    }
+    this.edges[index] = edge;
+    return Promise.resolve();
   }
 
   upsertEdge(edge: Edge): Promise<void> {

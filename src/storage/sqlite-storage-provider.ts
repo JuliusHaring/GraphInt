@@ -137,6 +137,32 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     });
   }
 
+  async createNode(node: Node): Promise<void> {
+    await this.ready;
+    const existing = await get<NodeRow>(this.db, "SELECT id FROM nodes WHERE id = ?", [node.id]);
+    if (existing) {
+      throw new Error(`Node with id "${node.id}" already exists`);
+    }
+    await run(this.db, "INSERT INTO nodes (id, type, properties) VALUES (?, ?, ?)", [
+      node.id,
+      node.type,
+      JSON.stringify(node.properties),
+    ]);
+  }
+
+  async updateNode(node: Node): Promise<void> {
+    await this.ready;
+    const existing = await get<NodeRow>(this.db, "SELECT id FROM nodes WHERE id = ?", [node.id]);
+    if (!existing) {
+      throw new Error(`Node with id "${node.id}" not found`);
+    }
+    await run(this.db, "UPDATE nodes SET type = ?, properties = ? WHERE id = ?", [
+      node.type,
+      JSON.stringify(node.properties),
+      node.id,
+    ]);
+  }
+
   async upsertNode(node: Node): Promise<void> {
     await this.ready;
     await run(
@@ -189,6 +215,32 @@ export class SqliteStorageProvider extends BaseStorageProvider {
       }
       return edge;
     });
+  }
+
+  async createEdge(edge: Edge): Promise<void> {
+    await this.ready;
+    const existing = await get<EdgeRow>(this.db, "SELECT id FROM edges WHERE id = ?", [edge.id]);
+    if (existing) {
+      throw new Error(`Edge with id "${edge.id}" already exists`);
+    }
+    await run(
+      this.db,
+      "INSERT INTO edges (id, type, from_id, to_id, properties) VALUES (?, ?, ?, ?, ?)",
+      [edge.id, edge.type, edge.from, edge.to, JSON.stringify(edge.properties)],
+    );
+  }
+
+  async updateEdge(edge: Edge): Promise<void> {
+    await this.ready;
+    const existing = await get<EdgeRow>(this.db, "SELECT id FROM edges WHERE id = ?", [edge.id]);
+    if (!existing) {
+      throw new Error(`Edge with id "${edge.id}" not found`);
+    }
+    await run(
+      this.db,
+      "UPDATE edges SET type = ?, from_id = ?, to_id = ?, properties = ? WHERE id = ?",
+      [edge.type, edge.from, edge.to, JSON.stringify(edge.properties), edge.id],
+    );
   }
 
   async upsertEdge(edge: Edge): Promise<void> {

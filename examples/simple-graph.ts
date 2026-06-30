@@ -2,7 +2,6 @@ import { Ontology } from "../src/graph/ontology.js";
 import { GraphClient } from "../src/index.js";
 import { GeminiLLMProvider } from "../src/llm/gemini-llm-provider.js";
 import { SqliteStorageProvider } from "../src/storage/sqlite-storage-provider.js";
-import { TextExtractor } from "../src/graph/ingestion/text-extractor.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -56,27 +55,18 @@ async function main() {
     ],
   };
 
-  const storageProvider = new SqliteStorageProvider(".data/simple-graph.db");
-
-  const llmProvider = new GeminiLLMProvider({
-    apiKey: process.env.GOOGLE_API_KEY || "",
-    model: "gemini-3.1-flash-lite",
+  const client = new GraphClient({
+    storageProvider: new SqliteStorageProvider(".data/simple-graph.db"),
+    llmProvider: new GeminiLLMProvider({
+      apiKey: process.env.GOOGLE_API_KEY || "",
+      model: "gemini-3.1-flash-lite",
+    }),
+    ontology,
   });
 
-  new GraphClient({
-    storageProvider: storageProvider,
-    llmProvider: llmProvider,
-    ontology: ontology,
-  });
+  const result = await client.ingestFromPath("examples/fixtures/marie-curie.txt");
 
-  const extractor = new TextExtractor(llmProvider, ontology);
-
-  const res = await extractor.extractFromPath("examples/fixtures/marie-curie.txt");
-
-  await storageProvider.upsertNode(res.nodes[0]);
-  await storageProvider.upsertEdge(res.edges[0]);
-
-  const node = await storageProvider.getNode(res.nodes[0].id);
+  const node = await client.getNode(result.nodes[0].id);
   console.log(node);
 }
 
