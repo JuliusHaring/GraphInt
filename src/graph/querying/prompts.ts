@@ -18,7 +18,7 @@ export function buildCommunitySummaryMessages(materials: string): Message[] {
 }
 
 export const QueryAnswerSystemPrompt =
-  "Answer the question using only the provided context. If the context is insufficient, say so.";
+  "Answer the question using only the provided context. If the context is insufficient, say so. Be concise and to the point. Do not include any other text or commentary.";
 
 export function buildQueryAnswerUserMessage(query: string, materials: string): Message {
   return {
@@ -56,7 +56,7 @@ export function buildQueryRouterMessages(query: string): Message[] {
 }
 
 export const CombinedAnswerSystemPrompt =
-  "You receive context gathered from multiple graph search strategies. Synthesize the materials into one clear answer. Use only the provided context. If the context is insufficient, say so.";
+  "You receive context gathered from multiple graph search strategies. Synthesize the materials into one clear answer. Use only the provided context. If the context is insufficient, say so. Be concise and to the point. Do not include any other text or commentary.";
 
 export function buildCombinedAnswerUserMessage(query: string, materials: string[]): Message {
   return {

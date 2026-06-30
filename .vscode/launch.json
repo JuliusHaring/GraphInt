@@ -8,6 +8,7 @@
       "program": "${workspaceFolder}/examples/simple-graph.ts",
       "runtimeArgs": ["--import", "tsx"],
       "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
       "skipFiles": ["<node_modules>/**", "<node_internals>/**"]
     }
   ]

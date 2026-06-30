@@ -70,8 +70,9 @@ async function main() {
 
   await client.ingestFromPath("examples/fixtures/marie-curie.txt");
 
-  const question = "Where did Marie Curie work? What did she accomplish?";
-  const result = await client.query(question);
+  const result = await client.query(
+    "How did Marie Curie's work shape the broader field of radioactivity?",
+  );
   log.info("Answer", { result });
 }
 
