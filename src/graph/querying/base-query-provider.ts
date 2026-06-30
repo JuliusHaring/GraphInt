@@ -10,16 +10,20 @@ export type QueryProviderOptions = {
   storageProvider: BaseStorageProvider;
   topK?: number;
   seedK?: number;
+  /** Hop limit for BFS neighborhood expansion. */
+  maxHops?: number;
 };
 
 const DEFAULT_TOP_K = 5;
 const DEFAULT_SEED_K = 3;
+const DEFAULT_MAX_HOPS = 2;
 
 export abstract class BaseQueryProvider {
   protected readonly llmProvider: BaseLLMProvider;
   protected readonly storageProvider: BaseStorageProvider;
   protected readonly topK: number;
   protected readonly seedK: number;
+  protected readonly maxHops: number;
   protected readonly log: Logger;
   private communitiesCache?: Community[];
   private graphSignature?: string;
@@ -29,6 +33,7 @@ export abstract class BaseQueryProvider {
     this.storageProvider = options.storageProvider;
     this.topK = options.topK ?? DEFAULT_TOP_K;
     this.seedK = options.seedK ?? DEFAULT_SEED_K;
+    this.maxHops = options.maxHops ?? DEFAULT_MAX_HOPS;
     this.log = createLogger(this.constructor.name);
   }
 

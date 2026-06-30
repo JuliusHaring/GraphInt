@@ -10,12 +10,7 @@ import { SqliteStorageProvider } from "../../src/storage/sqlite-storage-provider
 import { createLogger } from "../../src/utils/logger.js";
 import { bibleOntology } from "../fixtures/ontology.js";
 import { chunkText } from "./chunk-text.js";
-import {
-  BIBLE_DB_PATH,
-  BIBLE_PDF_PATH,
-  BIBLE_PDF_URL,
-  DEFAULT_CHUNK_SIZE,
-} from "./paths.js";
+import { BIBLE_DB_PATH, BIBLE_PDF_PATH, BIBLE_PDF_URL, DEFAULT_CHUNK_SIZE } from "./paths.js";
 
 const PROGRESS_PATH = "tests/data/build-progress.json";
 

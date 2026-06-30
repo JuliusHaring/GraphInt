@@ -40,15 +40,110 @@ export function expandNeighborhood(
   seedIds: Set<string>,
   edges: Edge[],
 ): { nodeIds: Set<string>; edges: Edge[] } {
-  const nodeIds = new Set(seedIds);
-  const neighborhoodEdges = edges.filter((edge) => seedIds.has(edge.from) || seedIds.has(edge.to));
+  return expandNeighborhoodBfs(seedIds, edges, 1);
+}
 
-  for (const edge of neighborhoodEdges) {
-    nodeIds.add(edge.from);
-    nodeIds.add(edge.to);
+export function expandNeighborhoodBfs(
+  seedIds: Set<string>,
+  edges: Edge[],
+  maxHops: number,
+): { nodeIds: Set<string>; edges: Edge[] } {
+  if (maxHops <= 0 || seedIds.size === 0) {
+    return { nodeIds: new Set(seedIds), edges: [] };
   }
 
-  return { nodeIds, edges: neighborhoodEdges };
+  const nodeIds = new Set(seedIds);
+  const neighborhoodEdges = new Map<string, Edge>();
+  const visited = new Set(seedIds);
+  const queue: Array<{ id: string; depth: number }> = [...seedIds].map((id) => ({ id, depth: 0 }));
+
+  while (queue.length > 0) {
+    const { id, depth } = queue.shift()!;
+    if (depth >= maxHops) {
+      continue;
+    }
+
+    for (const edge of edges) {
+      if (edge.from !== id && edge.to !== id) {
+        continue;
+      }
+
+      neighborhoodEdges.set(edge.id, edge);
+      const neighbor = edge.from === id ? edge.to : edge.from;
+      nodeIds.add(edge.from);
+      nodeIds.add(edge.to);
+
+      if (!visited.has(neighbor)) {
+        visited.add(neighbor);
+        queue.push({ id: neighbor, depth: depth + 1 });
+      }
+    }
+  }
+
+  return { nodeIds, edges: [...neighborhoodEdges.values()] };
+}
+
+export type GraphPath = {
+  nodeIds: string[];
+  edges: Edge[];
+};
+
+export function shortestPath(startId: string, endId: string, edges: Edge[]): GraphPath | undefined {
+  if (startId === endId) {
+    return { nodeIds: [startId], edges: [] };
+  }
+
+  const visited = new Set<string>([startId]);
+  const queue: Array<{ id: string; nodeIds: string[]; pathEdges: Edge[] }> = [
+    { id: startId, nodeIds: [startId], pathEdges: [] },
+  ];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+
+    for (const edge of edges) {
+      if (edge.from !== current.id && edge.to !== current.id) {
+        continue;
+      }
+
+      const neighbor = edge.from === current.id ? edge.to : edge.from;
+      if (visited.has(neighbor)) {
+        continue;
+      }
+
+      const nodeIds = [...current.nodeIds, neighbor];
+      const pathEdges = [...current.pathEdges, edge];
+
+      if (neighbor === endId) {
+        return { nodeIds, edges: pathEdges };
+      }
+
+      visited.add(neighbor);
+      queue.push({ id: neighbor, nodeIds, pathEdges });
+    }
+  }
+
+  return undefined;
+}
+
+export function formatPathDescription(nodesById: Map<string, Node>, path: GraphPath): string {
+  const segments: string[] = [];
+
+  for (let index = 0; index < path.edges.length; index++) {
+    const node = nodesById.get(path.nodeIds[index]);
+    if (node) {
+      segments.push(formatNode(node));
+    }
+    segments.push(formatEdge(path.edges[index]));
+  }
+
+  const lastNode = nodesById.get(path.nodeIds[path.nodeIds.length - 1]);
+  if (lastNode) {
+    segments.push(formatNode(lastNode));
+  }
+
+  const hops = Math.max(0, path.nodeIds.length - 1);
+  return `Path (${hops} hop${hops === 1 ? "" : "s"}): ${segments.join(" then ")}`;
 }
 
 export function nodeSearchItems(nodes: Node[]) {

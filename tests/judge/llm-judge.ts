@@ -16,5 +16,9 @@ export async function judgeAnswer(
   golden: string,
   actual: string,
 ): Promise<JudgeVerdict> {
-  return llmProvider.generate(buildJudgeMessages(question, golden, actual), undefined, JudgeVerdictSchema);
+  return llmProvider.generate(
+    buildJudgeMessages(question, golden, actual),
+    undefined,
+    JudgeVerdictSchema,
+  );
 }

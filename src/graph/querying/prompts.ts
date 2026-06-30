@@ -41,6 +41,8 @@ Available strategies:
 - local: expand from the most relevant entities to their neighbors. Best for questions about specific entities and their relationships.
 - global: use community summaries for corpus-wide themes. Best for holistic or thematic questions.
 - drift: combine local neighborhood context with relevant community summaries. Best for specific entities that need broader context.
+- bfs: multi-hop breadth-first expansion from seed entities. Best for questions that chain through several relationships.
+- shortest_path: find shortest paths between query-relevant entities. Best for how/why connection questions between two entities.
 
 Return JSON with a "strategies" array containing one or more strategy names.`;
 

@@ -80,7 +80,9 @@ describe.runIf(!hasApiKey || !hasDatabase)("graph golden eval", () => {
       log.warn("Skipping LLM judge eval — set GOOGLE_API_KEY to run");
     }
     if (!hasDatabase) {
-      log.warn("Skipping LLM judge eval — run npm run test:build-db to build tests/data/bible-graph.db");
+      log.warn(
+        "Skipping LLM judge eval — run npm run test:build-db to build tests/data/bible-graph.db",
+      );
     }
     expect(true).toBe(true);
   });

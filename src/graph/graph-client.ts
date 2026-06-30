@@ -3,10 +3,12 @@ import { BaseStorageProvider } from "../storage/base-storage-provider.js";
 import {
   BaseQueryProvider,
   BasicSearchQueryProvider,
+  BfsSearchQueryProvider,
   CombinedSearchQueryProvider,
   DriftSearchQueryProvider,
   GlobalSearchQueryProvider,
   LocalSearchQueryProvider,
+  ShortestPathSearchQueryProvider,
   QueryMethod,
 } from "./querying/index.js";
 import {
@@ -208,6 +210,10 @@ export class GraphClient {
           return new GlobalSearchQueryProvider(options);
         case "drift":
           return new DriftSearchQueryProvider(options);
+        case "bfs":
+          return new BfsSearchQueryProvider(options);
+        case "shortest_path":
+          return new ShortestPathSearchQueryProvider(options);
         case "combined":
           return new CombinedSearchQueryProvider(options);
       }

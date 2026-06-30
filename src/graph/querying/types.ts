@@ -1,7 +1,14 @@
 import { Edge, Node } from "../ontology.js";
 import { z } from "zod";
 
-export const QueryStrategySchema = z.enum(["basic", "local", "global", "drift"]);
+export const QueryStrategySchema = z.enum([
+  "basic",
+  "local",
+  "global",
+  "drift",
+  "bfs",
+  "shortest_path",
+]);
 export type QueryStrategy = z.infer<typeof QueryStrategySchema>;
 
 export const QueryPlanSchema = z.object({

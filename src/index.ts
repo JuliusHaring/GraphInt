@@ -5,10 +5,12 @@ export type { QueryMethod } from "./graph/querying/index.js";
 export {
   BaseQueryProvider,
   BasicSearchQueryProvider,
+  BfsSearchQueryProvider,
   CombinedSearchQueryProvider,
   DriftSearchQueryProvider,
   GlobalSearchQueryProvider,
   LocalSearchQueryProvider,
+  ShortestPathSearchQueryProvider,
 } from "./graph/querying/index.js";
 export type {
   Community,

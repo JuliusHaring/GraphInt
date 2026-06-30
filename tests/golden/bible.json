@@ -1,64 +1,76 @@
 {
   "cases": [
     {
-      "id": "david-lineage",
-      "method": "local",
-      "question": "Who was David's father, and from which tribe did David come?",
-      "golden": "David's father was Jesse, and David was from the tribe of Judah."
-    },
-    {
-      "id": "abraham-covenant",
-      "method": "global",
-      "question": "What promises did God make to Abraham in the covenant, and how did they concern his descendants and the land?",
-      "golden": "God promised Abraham descendants as numerous as the stars, that nations would be blessed through him, and that his offspring would receive the land of Canaan."
-    },
-    {
-      "id": "exodus-leadership",
-      "method": "combined",
-      "question": "How did leadership pass from Moses to Joshua, and what was Joshua's mission regarding the promised land?",
-      "golden": "After Moses died, Joshua son of Nun became leader of Israel. He was commissioned to lead the people across the Jordan and take possession of the land God had promised."
-    },
-    {
-      "id": "jesus-john-baptist",
-      "method": "drift",
-      "question": "What was the relationship between Jesus and John the Baptist, and how did their ministries connect at the beginning of the Gospels?",
-      "golden": "John the Baptist was a forerunner who prepared the way for the Lord. He baptized Jesus in the Jordan, and Jesus began his public ministry after John had been arrested."
-    },
-    {
-      "id": "peter-denial",
-      "method": "local",
-      "question": "How did Peter deny Jesus during Passion week, and how was Peter restored afterward?",
-      "golden": "Peter denied knowing Jesus three times before the rooster crowed. After the resurrection, Jesus restored Peter by questioning his love three times and commissioning him to shepherd his sheep."
-    },
-    {
-      "id": "esther-deliverance",
+      "id": "moses-ten-commandments",
       "method": "basic",
-      "question": "How did Esther save the Jewish people, and who plotted their destruction?",
-      "golden": "Esther, queen of Persia, risked her life to approach the king and expose Haman's plot to destroy the Jews. The king authorized the Jews to defend themselves, leading to their deliverance."
+      "question": "What teaching did Moses teach?",
+      "golden": "Moses taught the Ten Commandments."
     },
     {
-      "id": "beatitudes",
-      "method": "basic",
-      "question": "What are the Beatitudes and in which sermon of Jesus are they found?",
-      "golden": "The Beatitudes are blessings pronounced by Jesus on the poor in spirit, those who mourn, the humble, those who hunger for righteousness, the merciful, the pure in heart, the peacemakers, and the persecuted. They appear in the Sermon on the Mount in Matthew."
+      "id": "aaron-sons",
+      "method": "local",
+      "question": "Who were Aaron's sons?",
+      "golden": "Aaron's sons included Nadab, Abihu, Eleazar, and Ithamar."
     },
     {
-      "id": "babylonian-exile",
-      "method": "global",
-      "question": "What led to the fall of Jerusalem and the Babylonian exile of Judah?",
-      "golden": "Judah's persistent idolatry and rejection of God's prophets led to judgment. Nebuchadnezzar besieged Jerusalem, destroyed the temple, and deported many Judeans to Babylon."
+      "id": "moses-books",
+      "method": "local",
+      "question": "In which books does Moses appear?",
+      "golden": "Moses appears in Exodus and Leviticus."
     },
     {
-      "id": "paul-rome",
-      "method": "drift",
-      "question": "Why was the apostle Paul imprisoned in Rome, and what was he doing during that imprisonment?",
-      "golden": "Paul was arrested in Jerusalem after a riot in the temple, appealed to Caesar as a Roman citizen, and was sent to Rome. While imprisoned there he continued to preach the kingdom of God and teach about the Lord Jesus Christ."
+      "id": "day-of-atonement",
+      "method": "local",
+      "question": "Where did the Day of Atonement take place?",
+      "golden": "The Day of Atonement occurred at the Tent of Meeting."
     },
     {
-      "id": "creation-fall",
+      "id": "priestly-ministry",
       "method": "combined",
-      "question": "According to Genesis, how did sin enter the world and what were its immediate consequences for Adam and Eve?",
-      "golden": "The serpent deceived Eve to eat the forbidden fruit, and Adam ate as well. Their disobedience brought sin into the world, resulting in shame, toil, pain in childbirth, and expulsion from the Garden of Eden."
+      "question": "Who participated in the Priestly Ministry Inauguration, and where did the ordination of Aaron and his sons take place?",
+      "golden": "Moses and Aaron participated in the Priestly Ministry Inauguration. The ordination of Aaron and his sons took place at Mount Sinai."
+    },
+    {
+      "id": "exodus-figures",
+      "method": "local",
+      "question": "Which major figures appear in the book of Exodus?",
+      "golden": "Moses and Aaron appear in Exodus."
+    },
+    {
+      "id": "aaron-ceremonies",
+      "method": "drift",
+      "question": "What ceremonial events was Aaron involved in?",
+      "golden": "Aaron participated in the Priestly Ministry Inauguration and the Day of Atonement."
+    },
+    {
+      "id": "moses-israelites",
+      "method": "local",
+      "question": "What group was Moses a member of?",
+      "golden": "Moses was a member of the Israelites."
+    },
+    {
+      "id": "shelomith-lineage",
+      "method": "combined",
+      "question": "Who was Shelomith's father, and which tribe was she a member of?",
+      "golden": "Dibri was Shelomith's father, and Shelomith was a member of the Tribe of Dan."
+    },
+    {
+      "id": "leviticus-aaron",
+      "method": "drift",
+      "question": "In which books does Aaron appear, and what was his relationship to Nadab and Abihu?",
+      "golden": "Aaron appears in Exodus and Leviticus. He was the father of Nadab and Abihu."
+    },
+    {
+      "id": "aaron-sons-books",
+      "method": "bfs",
+      "question": "Which books mention Aaron's sons?",
+      "golden": "Nadab and Abihu appear in Leviticus."
+    },
+    {
+      "id": "aaron-nadab-leviticus",
+      "method": "shortest_path",
+      "question": "How is Aaron connected to Leviticus through his son Nadab?",
+      "golden": "Aaron was the father of Nadab, and Nadab appears in Leviticus."
     }
   ]
 }

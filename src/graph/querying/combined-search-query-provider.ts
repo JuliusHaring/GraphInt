@@ -1,8 +1,10 @@
 import { BaseQueryProvider, QueryProviderOptions } from "./base-query-provider.js";
 import { BasicSearchQueryProvider } from "./basic-search-query-provider.js";
+import { BfsSearchQueryProvider } from "./bfs-search-query-provider.js";
 import { DriftSearchQueryProvider } from "./drift-search-query-provider.js";
 import { GlobalSearchQueryProvider } from "./global-search-query-provider.js";
 import { LocalSearchQueryProvider } from "./local-search-query-provider.js";
+import { ShortestPathSearchQueryProvider } from "./shortest-path-search-query-provider.js";
 import { buildCombinedAnswerMessages, buildQueryRouterMessages } from "./prompts.js";
 import { QueryContext, QueryGraph, QueryPlanSchema, QueryStrategy } from "./types.js";
 
@@ -16,6 +18,8 @@ export class CombinedSearchQueryProvider extends BaseQueryProvider {
       local: new LocalSearchQueryProvider(options),
       global: new GlobalSearchQueryProvider(options),
       drift: new DriftSearchQueryProvider(options),
+      bfs: new BfsSearchQueryProvider(options),
+      shortest_path: new ShortestPathSearchQueryProvider(options),
     };
   }
 

@@ -9,11 +9,7 @@ Score from 0 to 1:
 
 Return JSON with: score (number), passed (boolean, true if score >= 0.7), reason (short string).`;
 
-export function buildJudgeUserMessage(
-  question: string,
-  golden: string,
-  actual: string,
-): Message {
+export function buildJudgeUserMessage(question: string, golden: string, actual: string): Message {
   return {
     role: "user",
     content: `Question: ${question}
