@@ -7,6 +7,7 @@ import { z } from "zod";
 export class OpenAILLMProvider extends BaseLLMProvider {
   private readonly api: OpenAI;
   private readonly model: string;
+  private readonly embeddingModel?: string;
 
   constructor(options: LLMProviderOptions) {
     super(options);
@@ -14,6 +15,7 @@ export class OpenAILLMProvider extends BaseLLMProvider {
     this.api = new OpenAI({
       apiKey: options.apiKey,
     });
+    this.embeddingModel = options.embeddingModel;
   }
 
   async generate(messages: Message[]): Promise<string>;
@@ -49,5 +51,24 @@ export class OpenAILLMProvider extends BaseLLMProvider {
     }
 
     return content;
+  }
+
+  protected async embedUncached(texts: string[]): Promise<number[][]> {
+    if (texts.length === 0) {
+      return [];
+    }
+
+    if (!this.embeddingModel) {
+      throw new Error("Embedding model not configured");
+    }
+
+    const response = await this.api.embeddings.create({
+      model: this.embeddingModel,
+      input: texts,
+    });
+
+    return response.data
+      .sort((left, right) => left.index - right.index)
+      .map((entry) => entry.embedding);
   }
 }

@@ -33,10 +33,12 @@ function toGeminiRequest(messages: Message[]): {
 export class GeminiLLMProvider extends BaseLLMProvider {
   private readonly api: GoogleGenerativeAI;
   private readonly model: string;
+  private readonly embeddingModel?: string;
 
   constructor(options: LLMProviderOptions) {
     super(options);
     this.model = options.model;
+    this.embeddingModel = options.embeddingModel;
     this.api = new GoogleGenerativeAI(options.apiKey);
   }
 
@@ -76,5 +78,32 @@ export class GeminiLLMProvider extends BaseLLMProvider {
     }
 
     return text;
+  }
+
+  protected async embedUncached(texts: string[]): Promise<number[][]> {
+    if (texts.length === 0) {
+      return [];
+    }
+
+    if (!this.embeddingModel) {
+      throw new Error("Embedding model not configured");
+    }
+
+    const model = this.api.getGenerativeModel({
+      model: this.embeddingModel,
+    });
+
+    const response = await model.batchEmbedContents({
+      requests: texts.map((text) => ({
+        content: { role: "user", parts: [{ text }] },
+      })),
+    });
+
+    return response.embeddings.map((embedding, index) => {
+      if (embedding.values.length === 0) {
+        throw new Error(`No embedding returned from Gemini for input ${index}`);
+      }
+      return embedding.values;
+    });
   }
 }

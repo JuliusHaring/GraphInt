@@ -17,6 +17,10 @@ export class MemoryStorageProvider extends BaseStorageProvider {
     return Promise.all(ids.map((id) => this.getNode(id)));
   }
 
+  listNodes(): Promise<Node[]> {
+    return Promise.resolve([...this.nodes]);
+  }
+
   createNode(node: Node): Promise<void> {
     if (this.nodes.some((existing) => existing.id === node.id)) {
       throw new Error(`Node with id "${node.id}" already exists`);
@@ -59,6 +63,10 @@ export class MemoryStorageProvider extends BaseStorageProvider {
 
   getEdges(ids: string[]): Promise<Edge[]> {
     return Promise.all(ids.map((id) => this.getEdge(id)));
+  }
+
+  listEdges(): Promise<Edge[]> {
+    return Promise.resolve([...this.edges]);
   }
 
   createEdge(edge: Edge): Promise<void> {

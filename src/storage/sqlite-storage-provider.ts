@@ -8,6 +8,7 @@ type NodeRow = {
   id: string;
   type: string;
   properties: string;
+  embedding: string | null;
 };
 
 type EdgeRow = {
@@ -16,6 +17,7 @@ type EdgeRow = {
   from_id: string;
   to_id: string;
   properties: string;
+  embedding: string | null;
 };
 
 function run(db: Database, sql: string, params: unknown[] = []): Promise<void> {
@@ -59,6 +61,7 @@ function rowToNode(row: NodeRow): Node {
     id: row.id,
     type: row.type,
     properties: JSON.parse(row.properties),
+    ...(row.embedding ? { embedding: JSON.parse(row.embedding) } : {}),
   };
 }
 
@@ -69,7 +72,12 @@ function rowToEdge(row: EdgeRow): Edge {
     from: row.from_id,
     to: row.to_id,
     properties: JSON.parse(row.properties),
+    ...(row.embedding ? { embedding: JSON.parse(row.embedding) } : {}),
   };
+}
+
+function serializeEmbedding(entity: { embedding?: number[] }): string | null {
+  return entity.embedding ? JSON.stringify(entity.embedding) : null;
 }
 
 export class SqliteStorageProvider extends BaseStorageProvider {
@@ -88,7 +96,8 @@ export class SqliteStorageProvider extends BaseStorageProvider {
       `CREATE TABLE IF NOT EXISTS nodes (
         id TEXT PRIMARY KEY,
         type TEXT NOT NULL,
-        properties TEXT NOT NULL
+        properties TEXT NOT NULL,
+        embedding TEXT
       )`,
     );
     await run(
@@ -98,16 +107,28 @@ export class SqliteStorageProvider extends BaseStorageProvider {
         type TEXT NOT NULL,
         from_id TEXT NOT NULL,
         to_id TEXT NOT NULL,
-        properties TEXT NOT NULL
+        properties TEXT NOT NULL,
+        embedding TEXT
       )`,
     );
+    await this.ensureColumn("nodes", "embedding", "TEXT");
+    await this.ensureColumn("edges", "embedding", "TEXT");
+  }
+
+  private async ensureColumn(table: string, column: string, definition: string): Promise<void> {
+    const columns = await all<{ name: string }>(this.db, `PRAGMA table_info(${table})`);
+    if (!columns.some((entry) => entry.name === column)) {
+      await run(this.db, `ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+    }
   }
 
   async getNode(id: string): Promise<Node> {
     await this.ready;
-    const row = await get<NodeRow>(this.db, "SELECT id, type, properties FROM nodes WHERE id = ?", [
-      id,
-    ]);
+    const row = await get<NodeRow>(
+      this.db,
+      "SELECT id, type, properties, embedding FROM nodes WHERE id = ?",
+      [id],
+    );
     if (!row) {
       throw new Error(`Node with id "${id}" not found`);
     }
@@ -123,7 +144,7 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     const placeholders = ids.map(() => "?").join(", ");
     const rows = await all<NodeRow>(
       this.db,
-      `SELECT id, type, properties FROM nodes WHERE id IN (${placeholders})`,
+      `SELECT id, type, properties, embedding FROM nodes WHERE id IN (${placeholders})`,
       ids,
     );
     const nodesById = new Map(rows.map((row) => [row.id, rowToNode(row)]));
@@ -137,16 +158,23 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     });
   }
 
+  async listNodes(): Promise<Node[]> {
+    await this.ready;
+    const rows = await all<NodeRow>(this.db, "SELECT id, type, properties, embedding FROM nodes");
+    return rows.map(rowToNode);
+  }
+
   async createNode(node: Node): Promise<void> {
     await this.ready;
     const existing = await get<NodeRow>(this.db, "SELECT id FROM nodes WHERE id = ?", [node.id]);
     if (existing) {
       throw new Error(`Node with id "${node.id}" already exists`);
     }
-    await run(this.db, "INSERT INTO nodes (id, type, properties) VALUES (?, ?, ?)", [
+    await run(this.db, "INSERT INTO nodes (id, type, properties, embedding) VALUES (?, ?, ?, ?)", [
       node.id,
       node.type,
       JSON.stringify(node.properties),
+      serializeEmbedding(node),
     ]);
   }
 
@@ -156,9 +184,10 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     if (!existing) {
       throw new Error(`Node with id "${node.id}" not found`);
     }
-    await run(this.db, "UPDATE nodes SET type = ?, properties = ? WHERE id = ?", [
+    await run(this.db, "UPDATE nodes SET type = ?, properties = ?, embedding = ? WHERE id = ?", [
       node.type,
       JSON.stringify(node.properties),
+      serializeEmbedding(node),
       node.id,
     ]);
   }
@@ -167,12 +196,13 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     await this.ready;
     await run(
       this.db,
-      `INSERT INTO nodes (id, type, properties)
-       VALUES (?, ?, ?)
+      `INSERT INTO nodes (id, type, properties, embedding)
+       VALUES (?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          type = excluded.type,
-         properties = excluded.properties`,
-      [node.id, node.type, JSON.stringify(node.properties)],
+         properties = excluded.properties,
+         embedding = excluded.embedding`,
+      [node.id, node.type, JSON.stringify(node.properties), serializeEmbedding(node)],
     );
   }
 
@@ -185,7 +215,7 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     await this.ready;
     const row = await get<EdgeRow>(
       this.db,
-      "SELECT id, type, from_id, to_id, properties FROM edges WHERE id = ?",
+      "SELECT id, type, from_id, to_id, properties, embedding FROM edges WHERE id = ?",
       [id],
     );
     if (!row) {
@@ -203,7 +233,7 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     const placeholders = ids.map(() => "?").join(", ");
     const rows = await all<EdgeRow>(
       this.db,
-      `SELECT id, type, from_id, to_id, properties FROM edges WHERE id IN (${placeholders})`,
+      `SELECT id, type, from_id, to_id, properties, embedding FROM edges WHERE id IN (${placeholders})`,
       ids,
     );
     const edgesById = new Map(rows.map((row) => [row.id, rowToEdge(row)]));
@@ -217,6 +247,15 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     });
   }
 
+  async listEdges(): Promise<Edge[]> {
+    await this.ready;
+    const rows = await all<EdgeRow>(
+      this.db,
+      "SELECT id, type, from_id, to_id, properties, embedding FROM edges",
+    );
+    return rows.map(rowToEdge);
+  }
+
   async createEdge(edge: Edge): Promise<void> {
     await this.ready;
     const existing = await get<EdgeRow>(this.db, "SELECT id FROM edges WHERE id = ?", [edge.id]);
@@ -225,8 +264,15 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     }
     await run(
       this.db,
-      "INSERT INTO edges (id, type, from_id, to_id, properties) VALUES (?, ?, ?, ?, ?)",
-      [edge.id, edge.type, edge.from, edge.to, JSON.stringify(edge.properties)],
+      "INSERT INTO edges (id, type, from_id, to_id, properties, embedding) VALUES (?, ?, ?, ?, ?, ?)",
+      [
+        edge.id,
+        edge.type,
+        edge.from,
+        edge.to,
+        JSON.stringify(edge.properties),
+        serializeEmbedding(edge),
+      ],
     );
   }
 
@@ -238,8 +284,15 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     }
     await run(
       this.db,
-      "UPDATE edges SET type = ?, from_id = ?, to_id = ?, properties = ? WHERE id = ?",
-      [edge.type, edge.from, edge.to, JSON.stringify(edge.properties), edge.id],
+      "UPDATE edges SET type = ?, from_id = ?, to_id = ?, properties = ?, embedding = ? WHERE id = ?",
+      [
+        edge.type,
+        edge.from,
+        edge.to,
+        JSON.stringify(edge.properties),
+        serializeEmbedding(edge),
+        edge.id,
+      ],
     );
   }
 
@@ -247,14 +300,22 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     await this.ready;
     await run(
       this.db,
-      `INSERT INTO edges (id, type, from_id, to_id, properties)
-       VALUES (?, ?, ?, ?, ?)
+      `INSERT INTO edges (id, type, from_id, to_id, properties, embedding)
+       VALUES (?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          type = excluded.type,
          from_id = excluded.from_id,
          to_id = excluded.to_id,
-         properties = excluded.properties`,
-      [edge.id, edge.type, edge.from, edge.to, JSON.stringify(edge.properties)],
+         properties = excluded.properties,
+         embedding = excluded.embedding`,
+      [
+        edge.id,
+        edge.type,
+        edge.from,
+        edge.to,
+        JSON.stringify(edge.properties),
+        serializeEmbedding(edge),
+      ],
     );
   }
 

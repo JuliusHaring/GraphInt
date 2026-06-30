@@ -129,6 +129,7 @@ export const NodeSchema = z.object({
   id: z.string(),
   type: z.string(),
   properties: z.record(z.string(), PropertyValueSchema),
+  embedding: z.array(z.number()).optional(),
 });
 
 export type Node = z.infer<typeof NodeSchema>;
@@ -139,6 +140,7 @@ export const EdgeSchema = z.object({
   from: z.string(),
   to: z.string(),
   properties: z.record(z.string(), PropertyValueSchema),
+  embedding: z.array(z.number()).optional(),
 });
 
 export type Edge = z.infer<typeof EdgeSchema>;
@@ -149,6 +151,21 @@ export const GraphSchema = z.object({
 });
 
 export type Graph = z.infer<typeof GraphSchema>;
+
+export function serializeNodeForEmbedding(node: Pick<Node, "type" | "properties">): string {
+  return JSON.stringify({ type: node.type, properties: node.properties });
+}
+
+export function serializeEdgeForEmbedding(
+  edge: Pick<Edge, "type" | "from" | "to" | "properties">,
+): string {
+  return JSON.stringify({
+    type: edge.type,
+    from: edge.from,
+    to: edge.to,
+    properties: edge.properties,
+  });
+}
 
 export function createPropertyValueValidator(propertyType: PropertyType): z.ZodType {
   if (propertyType === "string") {

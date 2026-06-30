@@ -60,14 +60,17 @@ async function main() {
     llmProvider: new GeminiLLMProvider({
       apiKey: process.env.GOOGLE_API_KEY || "",
       model: "gemini-3.1-flash-lite",
+      embeddingModel: "gemini-embedding-001",
     }),
     ontology,
+    enableEmbedding: true,
   });
 
-  const result = await client.ingestFromPath("examples/fixtures/marie-curie.txt");
+  await client.ingestFromPath("examples/fixtures/marie-curie.txt");
 
-  const node = await client.getNode(result.nodes[0].id);
-  console.log(node);
+  const question = "Where did Marie Curie work? What did she accomplish?";
+  const result = await client.query(question);
+  console.log(result);
 }
 
 main().catch((error) => {

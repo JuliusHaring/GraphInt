@@ -1,0 +1,105 @@
+import { BaseLLMProvider } from "../../llm/base-llm-provider.js";
+import { BaseStorageProvider } from "../../storage/base-storage-provider.js";
+import { buildCommunitySummaryMessages, buildQueryAnswerMessages } from "./prompts.js";
+import { Community, QueryContext, QueryGraph } from "./types.js";
+import { buildGraphSignature, detectCommunities, formatEdge, formatNode } from "./utils.js";
+
+export type QueryProviderOptions = {
+  llmProvider: BaseLLMProvider;
+  storageProvider: BaseStorageProvider;
+  topK?: number;
+  seedK?: number;
+};
+
+const DEFAULT_TOP_K = 5;
+const DEFAULT_SEED_K = 3;
+
+export abstract class BaseQueryProvider {
+  protected readonly llmProvider: BaseLLMProvider;
+  protected readonly storageProvider: BaseStorageProvider;
+  protected readonly topK: number;
+  protected readonly seedK: number;
+  private communitiesCache?: Community[];
+  private graphSignature?: string;
+
+  constructor(protected readonly options: QueryProviderOptions) {
+    this.llmProvider = options.llmProvider;
+    this.storageProvider = options.storageProvider;
+    this.topK = options.topK ?? DEFAULT_TOP_K;
+    this.seedK = options.seedK ?? DEFAULT_SEED_K;
+  }
+
+  abstract buildContext(query: string, graph: QueryGraph): Promise<QueryContext>;
+
+  async loadGraph(): Promise<QueryGraph> {
+    const [nodes, edges] = await Promise.all([
+      this.storageProvider.listNodes(),
+      this.storageProvider.listEdges(),
+    ]);
+
+    const graph = { nodes, edges };
+    const communities = await this.resolveCommunities(graph);
+    return { ...graph, communities };
+  }
+
+  async query(query: string, graph?: QueryGraph): Promise<string> {
+    const context = await this.buildContext(query, graph ?? (await this.loadGraph()));
+    return this.answer(context);
+  }
+
+  protected async ensureCommunities(graph: QueryGraph): Promise<Community[]> {
+    if (graph.communities && graph.communities.length > 0) {
+      return graph.communities;
+    }
+
+    const communities = await this.resolveCommunities(graph);
+    graph.communities = communities;
+    return communities;
+  }
+
+  protected async resolveCommunities(
+    graph: Pick<QueryGraph, "nodes" | "edges">,
+  ): Promise<Community[]> {
+    const signature = buildGraphSignature(graph.nodes, graph.edges);
+    if (this.communitiesCache && this.graphSignature === signature) {
+      return this.communitiesCache;
+    }
+
+    const clusters = detectCommunities(graph.nodes, graph.edges);
+    const communities = await Promise.all(
+      clusters.map(async (cluster) => ({
+        id: cluster.id,
+        nodeIds: cluster.nodeIds,
+        summary: await this.summarizeCommunity(cluster.nodeIds, graph),
+      })),
+    );
+
+    this.communitiesCache = communities;
+    this.graphSignature = signature;
+    return communities;
+  }
+
+  private async summarizeCommunity(
+    nodeIds: string[],
+    graph: Pick<QueryGraph, "nodes" | "edges">,
+  ): Promise<string> {
+    const nodesById = new Map(graph.nodes.map((node) => [node.id, node]));
+    const nodeIdSet = new Set(nodeIds);
+    const materials = [
+      ...nodeIds
+        .map((nodeId) => nodesById.get(nodeId))
+        .filter((node) => node !== undefined)
+        .map((node) => formatNode(node)),
+      ...graph.edges
+        .filter((edge) => nodeIdSet.has(edge.from) || nodeIdSet.has(edge.to))
+        .map((edge) => formatEdge(edge)),
+    ];
+
+    return this.llmProvider.generate(buildCommunitySummaryMessages(materials.join("\n")));
+  }
+
+  protected async answer(context: QueryContext): Promise<string> {
+    const materials = context.materials.join("\n\n");
+    return this.llmProvider.generate(buildQueryAnswerMessages(context.query, materials));
+  }
+}
