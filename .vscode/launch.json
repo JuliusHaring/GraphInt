@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Example: Simple Graph",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/examples/simple-graph.ts",
+      "runtimeArgs": ["--import", "tsx"],
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_modules>/**", "<node_internals>/**"]
+    }
+  ]
+}

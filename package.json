@@ -1,0 +1,49 @@
+{
+  "name": "graphint",
+  "version": "0.0.0",
+  "description": "A graph intelligence package supporting databases and LLM providers",
+  "keywords": [
+    "graph",
+    "database",
+    "llm",
+    "ai"
+  ],
+  "license": "MIT",
+  "author": "Julius Haring",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "format": "prettier --write .",
+    "lint": "eslint . --fix",
+    "fl": "npm run format && npm run lint"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.0.1",
+    "@types/pdf-parse": "^1.1.5",
+    "dotenv": "^17.4.2",
+    "eslint": "^10.6.0",
+    "prettier": "^3.9.4",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.62.1",
+    "vitest": "^4.1.9"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "mammoth": "^1.12.0",
+    "openai": "^6.45.0",
+    "pdf-parse": "^2.4.5",
+    "sqlite3": "^6.0.1",
+    "word-extractor": "^1.0.4",
+    "xlsx": "^0.18.5",
+    "zod": "^4.4.3"
+  }
+}
