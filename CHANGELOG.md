@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0](https://github.com/JuliusHaring/GraphTide/compare/v0.4.0...v0.5.0) (2026-07-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* add history to query()
+
+### Features
+
+* add history to query() ([b6a0708](https://github.com/JuliusHaring/GraphTide/commit/b6a0708a04db4d82b5273d6bc8ea9d9f1eab75a7))
+
 ## [0.4.0](https://github.com/JuliusHaring/GraphTide/compare/v0.3.0...v0.4.0) (2026-07-02)
 
 
