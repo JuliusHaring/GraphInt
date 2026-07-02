@@ -45,12 +45,12 @@
     "fl": "npm run format && npm run lint",
     "commitlint": "commitlint --last --verbose",
     "changelog": "commit-and-tag-version --dry-run",
-    "release:amend": "npm run fl && git add CHANGELOG.md package.json package-lock.json && (git diff --cached --quiet || git commit --amend --no-edit --no-verify)",
-    "release:initial": "npm run test:unit && commit-and-tag-version --release-as 0.1.0 && npm run release:amend && npm publish",
-    "release": "npm run test:unit && commit-and-tag-version && npm run release:amend && npm publish",
-    "release:patch": "npm run test:unit && commit-and-tag-version --release-as patch && npm run release:amend && npm publish",
-    "release:minor": "npm run test:unit && commit-and-tag-version --release-as minor && npm run release:amend && npm publish",
-    "release:major": "npm run test:unit && commit-and-tag-version --release-as major && npm run release:amend && npm publish"
+    "release:preflight": "sh scripts/release-preflight.sh",
+    "release:initial": "npm run release:preflight && commit-and-tag-version --release-as 0.1.0 && npm publish",
+    "release": "npm run release:preflight && commit-and-tag-version && npm publish",
+    "release:patch": "npm run release:preflight && commit-and-tag-version --release-as patch && npm publish",
+    "release:minor": "npm run release:preflight && commit-and-tag-version --release-as minor && npm publish",
+    "release:major": "npm run release:preflight && commit-and-tag-version --release-as major && npm publish"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.0",

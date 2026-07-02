@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  mimeTypeFromResponse,
-  mimeTypeFromUrl,
-  parseContentType,
-} from "./mime.js";
+import { mimeTypeFromResponse, mimeTypeFromUrl, parseContentType } from "./mime.js";
 
 describe("mimeTypeFromUrl", () => {
   it("uses the URL pathname extension", () => {
@@ -17,10 +13,7 @@ describe("mimeTypeFromUrl", () => {
 describe("mimeTypeFromResponse", () => {
   it("prefers the response content type", () => {
     expect(
-      mimeTypeFromResponse(
-        "https://example.com/download",
-        "application/pdf; charset=binary",
-      ),
+      mimeTypeFromResponse("https://example.com/download", "application/pdf; charset=binary"),
     ).toBe("application/pdf");
   });
 
@@ -31,12 +24,9 @@ describe("mimeTypeFromResponse", () => {
   });
 
   it("ignores application/octet-stream headers", () => {
-    expect(
-      mimeTypeFromResponse(
-        "https://example.com/report.pdf",
-        "application/octet-stream",
-      ),
-    ).toBe("application/pdf");
+    expect(mimeTypeFromResponse("https://example.com/report.pdf", "application/octet-stream")).toBe(
+      "application/pdf",
+    );
   });
 });
 

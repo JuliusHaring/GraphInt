@@ -66,10 +66,7 @@ export class TextExtractor {
     }
 
     log.info("Extracting text from website URL", { url, mimeType });
-    const text = await this.documentExtractors.extractText(
-      mimeType ?? "text/html",
-      buffer,
-    );
+    const text = await this.documentExtractors.extractText(mimeType ?? "text/html", buffer);
     return this.extractText(text, options);
   }
 
