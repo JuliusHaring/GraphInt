@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0](https://github.com/JuliusHaring/GraphTide/compare/v0.1.3...v0.2.0) (2026-07-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* put both neighbourhood functions into one
+
+### Code Refactoring
+
+* put both neighbourhood functions into one ([3dc384b](https://github.com/JuliusHaring/GraphTide/commit/3dc384b8fcf8179ff3f43d6cddb8b5bf6febe331))
+
 ## [0.1.3](https://github.com/JuliusHaring/GraphTide/compare/v0.1.2...v0.1.3) (2026-07-02)
 
 
