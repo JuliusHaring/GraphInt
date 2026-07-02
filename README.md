@@ -59,6 +59,7 @@ console.log(answer);
 
 ### Storage providers
 
+- `PostgresStorageProvider` — persistent PostgreSQL database
 - `SqliteStorageProvider` — persistent local SQLite database
 - `MemoryStorageProvider` — in-memory store for tests and ephemeral use
 
