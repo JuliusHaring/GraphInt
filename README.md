@@ -62,12 +62,14 @@ console.log(answer);
 - `SqliteStorageProvider` — persistent local SQLite database
 - `MemoryStorageProvider` — in-memory store for tests and ephemeral use
 
+Storage is fully pluggable: implement your own backend by extending `BaseStorageProvider`, similar to how you can extend `BaseLLMProvider` for custom LLMs.
+
 ### LLM providers
 
 - `OpenAILLMProvider` — OpenAI chat + embeddings
 - `GeminiLLMProvider` — Google Gemini chat + embeddings
 
-Bring your own by extending `BaseStorageProvider` or `BaseLLMProvider`.
+LLM integration is also pluggable via `BaseLLMProvider`.
 
 ### Path finding
 

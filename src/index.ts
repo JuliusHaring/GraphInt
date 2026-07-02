@@ -25,9 +25,16 @@ export type { GraphNeighborhood, GraphPath } from "./graph/querying/utils.js";
 
 export { BaseLLMProvider } from "./llm/base-llm-provider.js";
 export type { LLMProviderOptions } from "./llm/base-llm-provider.js";
+export type { Message } from "./llm/types.js";
 export { GeminiLLMProvider } from "./llm/gemini-llm-provider.js";
 export { OpenAILLMProvider } from "./llm/openai-llm-provider.js";
 
 export { BaseStorageProvider } from "./storage/base-storage-provider.js";
+export type {
+  StorageProviderOptions,
+} from "./storage/base-storage-provider.js";
 export { MemoryStorageProvider } from "./storage/memory-storage-provider.js";
-export { SqliteStorageProvider } from "./storage/sqlite-storage-provider.js";
+export {
+  SqliteStorageProvider,
+} from "./storage/sqlite-storage-provider.js";
+export type { SqliteStorageProviderOptions } from "./storage/sqlite-storage-provider.js";

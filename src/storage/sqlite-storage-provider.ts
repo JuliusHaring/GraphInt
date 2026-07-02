@@ -1,5 +1,5 @@
 import sqlite3 from "sqlite3";
-import { BaseStorageProvider } from "./base-storage-provider.js";
+import { BaseStorageProvider, StorageProviderOptions } from "./base-storage-provider.js";
 import { Edge, Node } from "./types.js";
 import { createLogger } from "../utils/logger.js";
 
@@ -83,15 +83,20 @@ function serializeEmbedding(entity: { embedding?: number[] }): string | null {
   return entity.embedding ? JSON.stringify(entity.embedding) : null;
 }
 
+export type SqliteStorageProviderOptions = StorageProviderOptions & {
+  path: string;
+};
+
 export class SqliteStorageProvider extends BaseStorageProvider {
   private readonly db: Database;
   private readonly ready: Promise<void>;
 
-  constructor(path: string) {
-    super();
-    this.db = new sqlite3.Database(path);
+  constructor(path: string | SqliteStorageProviderOptions) {
+    const options = typeof path === "string" ? { path } : path;
+    super(options);
+    this.db = new sqlite3.Database(options.path);
     this.ready = this.init();
-    log.info("Opened database", { path });
+    log.info("Opened database", { path: options.path });
   }
 
   private async init(): Promise<void> {
@@ -135,7 +140,7 @@ export class SqliteStorageProvider extends BaseStorageProvider {
       [id],
     );
     if (!row) {
-      throw new Error(`Node with id "${id}" not found`);
+      throw this.notFound("Node", id);
     }
     return rowToNode(row);
   }
@@ -157,7 +162,7 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     return ids.map((id) => {
       const node = nodesById.get(id);
       if (!node) {
-        throw new Error(`Node with id "${id}" not found`);
+        throw this.notFound("Node", id);
       }
       return node;
     });
@@ -173,7 +178,7 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     await this.ready;
     const existing = await get<NodeRow>(this.db, "SELECT id FROM nodes WHERE id = ?", [node.id]);
     if (existing) {
-      throw new Error(`Node with id "${node.id}" already exists`);
+      throw this.alreadyExists("Node", node.id);
     }
     await run(this.db, "INSERT INTO nodes (id, type, properties, embedding) VALUES (?, ?, ?, ?)", [
       node.id,
@@ -188,7 +193,7 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     await this.ready;
     const existing = await get<NodeRow>(this.db, "SELECT id FROM nodes WHERE id = ?", [node.id]);
     if (!existing) {
-      throw new Error(`Node with id "${node.id}" not found`);
+      throw this.notFound("Node", node.id);
     }
     await run(this.db, "UPDATE nodes SET type = ?, properties = ?, embedding = ? WHERE id = ?", [
       node.type,
@@ -228,7 +233,7 @@ export class SqliteStorageProvider extends BaseStorageProvider {
       [id],
     );
     if (!row) {
-      throw new Error(`Edge with id "${id}" not found`);
+      throw this.notFound("Edge", id);
     }
     return rowToEdge(row);
   }
@@ -250,7 +255,7 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     return ids.map((id) => {
       const edge = edgesById.get(id);
       if (!edge) {
-        throw new Error(`Edge with id "${id}" not found`);
+        throw this.notFound("Edge", id);
       }
       return edge;
     });
@@ -269,7 +274,7 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     await this.ready;
     const existing = await get<EdgeRow>(this.db, "SELECT id FROM edges WHERE id = ?", [edge.id]);
     if (existing) {
-      throw new Error(`Edge with id "${edge.id}" already exists`);
+      throw this.alreadyExists("Edge", edge.id);
     }
     await run(
       this.db,
@@ -290,7 +295,7 @@ export class SqliteStorageProvider extends BaseStorageProvider {
     await this.ready;
     const existing = await get<EdgeRow>(this.db, "SELECT id FROM edges WHERE id = ?", [edge.id]);
     if (!existing) {
-      throw new Error(`Edge with id "${edge.id}" not found`);
+      throw this.notFound("Edge", edge.id);
     }
     await run(
       this.db,

@@ -1,4 +1,4 @@
-import { BaseStorageProvider } from "./base-storage-provider.js";
+import { BaseStorageProvider, StorageProviderOptions } from "./base-storage-provider.js";
 import { Edge, Node } from "./types.js";
 import { createLogger } from "../utils/logger.js";
 
@@ -8,10 +8,14 @@ export class MemoryStorageProvider extends BaseStorageProvider {
   private nodes: Node[] = [];
   private edges: Edge[] = [];
 
+  constructor(options: StorageProviderOptions = {}) {
+    super(options);
+  }
+
   async getNode(id: string): Promise<Node> {
     const node = this.nodes.find((node) => node.id === id);
     if (!node) {
-      throw new Error(`Node with id "${id}" not found`);
+      throw this.notFound("Node", id);
     }
     return node;
   }
@@ -26,7 +30,7 @@ export class MemoryStorageProvider extends BaseStorageProvider {
 
   createNode(node: Node): Promise<void> {
     if (this.nodes.some((existing) => existing.id === node.id)) {
-      throw new Error(`Node with id "${node.id}" already exists`);
+      throw this.alreadyExists("Node", node.id);
     }
     this.nodes.push(node);
     log.debug("Created node", { id: node.id });
@@ -36,7 +40,7 @@ export class MemoryStorageProvider extends BaseStorageProvider {
   updateNode(node: Node): Promise<void> {
     const index = this.nodes.findIndex((existing) => existing.id === node.id);
     if (index === -1) {
-      throw new Error(`Node with id "${node.id}" not found`);
+      throw this.notFound("Node", node.id);
     }
     this.nodes[index] = node;
     log.debug("Updated node", { id: node.id });
@@ -63,7 +67,7 @@ export class MemoryStorageProvider extends BaseStorageProvider {
   async getEdge(id: string): Promise<Edge> {
     const edge = this.edges.find((edge) => edge.id === id);
     if (!edge) {
-      throw new Error(`Edge with id "${id}" not found`);
+      throw this.notFound("Edge", id);
     }
     return edge;
   }
@@ -78,7 +82,7 @@ export class MemoryStorageProvider extends BaseStorageProvider {
 
   createEdge(edge: Edge): Promise<void> {
     if (this.edges.some((existing) => existing.id === edge.id)) {
-      throw new Error(`Edge with id "${edge.id}" already exists`);
+      throw this.alreadyExists("Edge", edge.id);
     }
     this.edges.push(edge);
     log.debug("Created edge", { id: edge.id });
@@ -88,7 +92,7 @@ export class MemoryStorageProvider extends BaseStorageProvider {
   updateEdge(edge: Edge): Promise<void> {
     const index = this.edges.findIndex((existing) => existing.id === edge.id);
     if (index === -1) {
-      throw new Error(`Edge with id "${edge.id}" not found`);
+      throw this.notFound("Edge", edge.id);
     }
     this.edges[index] = edge;
     log.debug("Updated edge", { id: edge.id });
