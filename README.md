@@ -55,7 +55,6 @@ console.log(result.materials);
 | `upsertNode` / `upsertEdge`                | Create or merge properties when the id already exists; returns `{ item, created }`                                       |
 | `createEdge` / `updateEdge` / `deleteEdge` | Strict create, update existing, and delete for edges                                                                     |
 | `getNode` / `getEdge`                      | Read by id (throws if missing)                                                                                           |
-| `tryGetNode` / `tryGetEdge`                | Read by id, returns `undefined` if missing                                                                               |
 | `hasNode` / `hasEdge`                      | Check existence by id                                                                                                    |
 | `getNeighbors(nodeId, options?)`           | 1-hop neighbors and connecting edges; `direction`: `in`, `out`, or `both`                                                |
 | `getShortestPaths(from, to, limit?)`       | Up to `limit` shortest simple paths between two nodes, ordered by hop count                                              |

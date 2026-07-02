@@ -186,14 +186,6 @@ export class GraphClient {
     return this.storageProvider.getEdge(id);
   }
 
-  tryGetNode(id: string): Promise<Node | undefined> {
-    return this.tryGetNodeInternal(id);
-  }
-
-  tryGetEdge(id: string): Promise<Edge | undefined> {
-    return this.tryGetEdgeInternal(id);
-  }
-
   async hasNode(id: string): Promise<boolean> {
     return (await this.tryGetNodeInternal(id)) !== undefined;
   }

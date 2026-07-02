@@ -150,10 +150,9 @@ describe("GraphClient write semantics", () => {
     );
   });
 
-  it("exposes tryGet and has helpers", async () => {
+  it("exposes has helpers", async () => {
     const client = createClient();
     expect(await client.hasNode("alice")).toBe(false);
-    expect(await client.tryGetNode("alice")).toBeUndefined();
 
     await client.createNode({
       id: "alice",
@@ -162,7 +161,6 @@ describe("GraphClient write semantics", () => {
     });
 
     expect(await client.hasNode("alice")).toBe(true);
-    expect(await client.tryGetNode("alice")).toMatchObject({ id: "alice" });
   });
 
   it("deletes incident edges when deleting a node", async () => {
