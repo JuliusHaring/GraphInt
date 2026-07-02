@@ -9,6 +9,10 @@
     "ai"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JuliusHaring/GraphInt.git"
+  },
   "author": "Julius Haring",
   "type": "module",
   "main": "./dist/index.js",
