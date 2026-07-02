@@ -50,6 +50,8 @@ console.log(result.materials);
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
 | `ingestFromPath(path, options?)`           | Extract entities from a file; optional `chunkSize` / `chunker`                                                           |
 | `ingestFromFile(file, options?)`           | Same as above, for `File` objects (e.g. in browsers)                                                                     |
+| `ingestFromFileURL(url, options?)`         | Download a document from a URL (PDF, DOCX, etc.) and ingest it                                                         |
+| `ingestFromWebsiteURL(url, options?)`      | Fetch an HTML page and ingest its text content                                                                           |
 | `ingestFromText(text, options?)`           | Extract entities from raw text or pre-chunked strings                                                                    |
 | `createNode` / `updateNode` / `deleteNode` | Strict create, partial update (`properties`, `unsetProperties`), and delete for nodes (also deletes incident edges)      |
 | `upsertNode` / `upsertEdge`                | Create or merge properties when the id already exists; returns `{ item, created }`                                       |

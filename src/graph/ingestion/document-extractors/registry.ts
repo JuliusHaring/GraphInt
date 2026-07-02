@@ -1,6 +1,7 @@
 import { DocExtractor } from "./doc.js";
 import { DocxExtractor } from "./docx.js";
 import { ExcelExtractor } from "./excel.js";
+import { HtmlExtractor } from "./html.js";
 import { PdfExtractor } from "./pdf.js";
 import { PlainTextExtractor } from "./plain-text.js";
 import { DocumentBuffer, DocumentTextExtractor } from "./types.js";
@@ -10,6 +11,7 @@ const log = createLogger("DocumentExtractorRegistry");
 
 const defaultExtractors: DocumentTextExtractor[] = [
   new PlainTextExtractor(),
+  new HtmlExtractor(),
   new PdfExtractor(),
   new DocExtractor(),
   new DocxExtractor(),

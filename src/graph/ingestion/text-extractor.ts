@@ -5,7 +5,13 @@ import {
   defaultDocumentExtractorRegistry,
   DocumentExtractorRegistry,
 } from "./document-extractors/registry.js";
-import { mimeTypeFromFile, mimeTypeFromPath } from "./document-extractors/mime.js";
+import { isHtmlContentType } from "./document-extractors/html.js";
+import {
+  mimeTypeFromFile,
+  mimeTypeFromPath,
+  mimeTypeFromResponse,
+} from "./document-extractors/mime.js";
+import { fetchUrl } from "./fetch-url.js";
 import { IngestionOptions, resolveIngestionInput } from "./chunking.js";
 import { LLMExtractor } from "./llm-extractor.js";
 import { IngestionResult } from "./types.js";
@@ -39,6 +45,31 @@ export class TextExtractor {
     log.info("Extracting text from path", { path, mimeType });
     const buffer = await readFile(path);
     const text = await this.documentExtractors.extractText(mimeType, buffer);
+    return this.extractText(text, options);
+  }
+
+  async extractFromFileURL(url: string, options?: IngestionOptions): Promise<IngestionResult> {
+    const { buffer, contentType } = await fetchUrl(url);
+    const mimeType = mimeTypeFromResponse(url, contentType);
+    log.info("Extracting text from file URL", { url, mimeType });
+    const text = await this.documentExtractors.extractText(mimeType, buffer);
+    return this.extractText(text, options);
+  }
+
+  async extractFromWebsiteURL(url: string, options?: IngestionOptions): Promise<IngestionResult> {
+    const { buffer, contentType } = await fetchUrl(url);
+    const mimeType = contentType ? mimeTypeFromResponse(url, contentType) : undefined;
+    if (mimeType && !isHtmlContentType(mimeType)) {
+      throw new Error(
+        `Expected HTML content from ${url}, got "${mimeType}". Use ingestFromFileURL for file URLs.`,
+      );
+    }
+
+    log.info("Extracting text from website URL", { url, mimeType });
+    const text = await this.documentExtractors.extractText(
+      mimeType ?? "text/html",
+      buffer,
+    );
     return this.extractText(text, options);
   }
 

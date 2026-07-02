@@ -165,6 +165,24 @@ export class GraphClient {
     return result;
   }
 
+  async ingestFromFileURL(url: string, options?: IngestionOptions): Promise<IngestionResult> {
+    const resolved = this.resolveIngestionOptions(options);
+    log.info("Ingesting from file URL", { url, chunkSize: resolved.chunkSize });
+    const result = await this.textExtractor.extractFromFileURL(url, resolved);
+    await this.save(result);
+    log.info("Ingestion complete", { nodes: result.nodes.length, edges: result.edges.length });
+    return result;
+  }
+
+  async ingestFromWebsiteURL(url: string, options?: IngestionOptions): Promise<IngestionResult> {
+    const resolved = this.resolveIngestionOptions(options);
+    log.info("Ingesting from website URL", { url, chunkSize: resolved.chunkSize });
+    const result = await this.textExtractor.extractFromWebsiteURL(url, resolved);
+    await this.save(result);
+    log.info("Ingestion complete", { nodes: result.nodes.length, edges: result.edges.length });
+    return result;
+  }
+
   async ingestFromText(
     text: string | string[],
     options?: IngestionOptions,

@@ -2,6 +2,8 @@ import { extname } from "node:path";
 
 export const MIME_TYPES = {
   PLAIN_TEXT: "text/plain",
+  HTML: "text/html",
+  XHTML: "application/xhtml+xml",
   PDF: "application/pdf",
   DOC: "application/msword",
   DOCX: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -12,6 +14,8 @@ export const MIME_TYPES = {
 const MIME_BY_EXTENSION: Record<string, string> = {
   ".txt": MIME_TYPES.PLAIN_TEXT,
   ".md": MIME_TYPES.PLAIN_TEXT,
+  ".html": MIME_TYPES.HTML,
+  ".htm": MIME_TYPES.HTML,
   ".pdf": MIME_TYPES.PDF,
   ".doc": MIME_TYPES.DOC,
   ".docx": MIME_TYPES.DOCX,
@@ -32,4 +36,20 @@ export function mimeTypeFromFile(file: File): string {
     return file.type;
   }
   return mimeTypeFromPath(file.name);
+}
+
+export function parseContentType(contentType: string): string {
+  return contentType.split(";")[0]?.trim().toLowerCase() ?? "";
+}
+
+export function mimeTypeFromUrl(url: string): string {
+  return mimeTypeFromPath(new URL(url).pathname);
+}
+
+export function mimeTypeFromResponse(url: string, contentType?: string): string {
+  const fromHeader = contentType ? parseContentType(contentType) : undefined;
+  if (fromHeader && fromHeader !== "application/octet-stream") {
+    return fromHeader;
+  }
+  return mimeTypeFromUrl(url);
 }
