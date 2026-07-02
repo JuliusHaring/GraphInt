@@ -51,12 +51,7 @@ function propertyValueEquals(left: PropertyValue, right: PropertyValue): boolean
   if (left instanceof Date && right instanceof Date) {
     return left.getTime() === right.getTime();
   }
-  if (
-    typeof left === "object" &&
-    left !== null &&
-    typeof right === "object" &&
-    right !== null
-  ) {
+  if (typeof left === "object" && left !== null && typeof right === "object" && right !== null) {
     return JSON.stringify(left) === JSON.stringify(right);
   }
   return false;

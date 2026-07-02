@@ -12,7 +12,9 @@ export type {
   QueryContext,
   QueryGraph,
   QueryMethod,
+  QueryOptions,
   QueryPlan,
   QueryResult,
   QueryStrategy,
+  QueryTuningOptions,
 } from "./types.js";

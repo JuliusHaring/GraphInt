@@ -19,6 +19,19 @@ export type QueryPlan = z.infer<typeof QueryPlanSchema>;
 
 export type QueryMethod = QueryStrategy | "combined";
 
+export type QueryTuningOptions = {
+  /** Max ranked nodes/edges or BFS neighborhood size. */
+  topK?: number;
+  /** Max seed nodes selected by similarity for expansion strategies. */
+  seedK?: number;
+  /** Hop limit for BFS neighborhood expansion. */
+  maxHops?: number;
+};
+
+export type QueryOptions = QueryTuningOptions & {
+  method?: QueryMethod;
+};
+
 export type Community = {
   id: string;
   summary: string;

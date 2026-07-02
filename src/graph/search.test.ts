@@ -15,10 +15,7 @@ const edges: Edge[] = [
 
 describe("filterNodes", () => {
   it("filters by type", () => {
-    expect(filterNodes(nodes, { type: "person" }).map((node) => node.id)).toEqual([
-      "alice",
-      "bob",
-    ]);
+    expect(filterNodes(nodes, { type: "person" }).map((node) => node.id)).toEqual(["alice", "bob"]);
   });
 
   it("filters by exact property match", () => {
@@ -32,9 +29,9 @@ describe("filterNodes", () => {
   });
 
   it("applies limit and offset", () => {
-    expect(filterNodes(nodes, { type: "person", limit: 1, offset: 1 }).map((node) => node.id)).toEqual(
-      ["bob"],
-    );
+    expect(
+      filterNodes(nodes, { type: "person", limit: 1, offset: 1 }).map((node) => node.id),
+    ).toEqual(["bob"]);
   });
 });
 

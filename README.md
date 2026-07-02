@@ -46,17 +46,17 @@ console.log(result.materials);
 
 `GraphClient` is the main entry point.
 
-| Method                                   | Description                                                                         |
-| ---------------------------------------- | ----------------------------------------------------------------------------------- |
-| `ingestFromPath(path)`                   | Extract entities from a file (PDF, DOCX, XLSX, plain text, …)                       |
-| `ingestFromFile(file)`                   | Same as above, for `File` objects (e.g. in browsers)                                |
-| `ingestFromText(text)`                   | Extract entities from raw text                                                      |
-| `createNode` / `editNode` / `deleteNode` | CRUD for nodes                                                                      |
-| `createEdge` / `editEdge` / `deleteEdge` | CRUD for edges                                                                      |
-| `getNode` / `getEdge`                    | Read by id                                                                          |
-| `getShortestPaths(from, to, limit?)`     | Up to `limit` shortest simple paths between two nodes, ordered by hop count         |
-| `getBfsNeighborhood(seeds, options?)`    | BFS expansion from seed node(s); `maxHops` (default 2) and optional `topK` node cap |
-| `query(question, method?)`               | Natural-language query; returns `{ query, answer, materials, method }`              |
+| Method                                   | Description                                                                                                              |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `ingestFromPath(path)`                   | Extract entities from a file (PDF, DOCX, XLSX, plain text, …)                                                            |
+| `ingestFromFile(file)`                   | Same as above, for `File` objects (e.g. in browsers)                                                                     |
+| `ingestFromText(text)`                   | Extract entities from raw text                                                                                           |
+| `createNode` / `editNode` / `deleteNode` | CRUD for nodes                                                                                                           |
+| `createEdge` / `editEdge` / `deleteEdge` | CRUD for edges                                                                                                           |
+| `getNode` / `getEdge`                    | Read by id                                                                                                               |
+| `getShortestPaths(from, to, limit?)`     | Up to `limit` shortest simple paths between two nodes, ordered by hop count                                              |
+| `getBfsNeighborhood(seeds, options?)`    | BFS expansion from seed node(s); `maxHops` (default 2) and optional `topK` node cap                                      |
+| `query(question, options?)`              | Natural-language query; returns `{ query, answer, materials, method }`. Options: `{ method?, topK?, seedK?, maxHops? }`. |
 
 ### Storage providers
 
@@ -107,6 +107,23 @@ console.log(neighborhood.edges); // edges between included nodes
 
 The `bfs` query method uses the same logic internally (`maxHops` + `topK` from query options).
 
+### Query tuning
+
+Set defaults on the client, or override per call:
+
+```ts
+const client = new GraphClient({
+  // ...
+  query: { topK: 10, seedK: 5, maxHops: 3 },
+});
+
+await client.query("Who works at Acme Corp?", { method: "bfs", topK: 3, maxHops: 1 });
+```
+
+- `topK` — max ranked nodes/edges or BFS neighborhood size
+- `seedK` — max seed nodes selected by similarity for expansion strategies
+- `maxHops` — hop limit for BFS neighborhood expansion
+
 ### Ontology
 
 Define node and edge types with typed properties. Use the `Ontology` type or validate at runtime with `OntologySchema`.
@@ -139,15 +156,15 @@ task commitlint
 
 Releases use [Task](https://taskfile.dev/) and [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version):
 
-| Task | Description |
-| --- | --- |
-| `task test` | Run unit tests |
-| `task changelog` | Preview the next version and changelog (dry run) |
-| `task release` | Run tests, bump semver from commits, update `CHANGELOG.md`, commit, tag, and `npm publish` |
-| `task release:patch` | Force a patch release and publish |
-| `task release:minor` | Force a minor release and publish |
-| `task release:major` | Force a major release and publish |
-| `task release:first` | First release only (no version bump) and publish |
+| Task                 | Description                                                                                |
+| -------------------- | ------------------------------------------------------------------------------------------ |
+| `task test`          | Run unit tests                                                                             |
+| `task changelog`     | Preview the next version and changelog (dry run)                                           |
+| `task release`       | Run tests, bump semver from commits, update `CHANGELOG.md`, commit, tag, and `npm publish` |
+| `task release:patch` | Force a patch release and publish                                                          |
+| `task release:minor` | Force a minor release and publish                                                          |
+| `task release:major` | Force a major release and publish                                                          |
+| `task release:first` | First release only (no version bump) and publish                                           |
 
 Typical flow:
 

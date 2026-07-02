@@ -9,9 +9,13 @@ import {
   GlobalSearchQueryProvider,
   LocalSearchQueryProvider,
   ShortestPathSearchQueryProvider,
-  QueryMethod,
 } from "./querying/index.js";
-import type { QueryResult } from "./querying/types.js";
+import type {
+  QueryMethod,
+  QueryOptions,
+  QueryResult,
+  QueryTuningOptions,
+} from "./querying/types.js";
 import {
   Edge,
   Graph,
@@ -51,6 +55,8 @@ export type GraphClientOptions = {
   llmProvider: BaseLLMProvider;
   ontology: Ontology;
   enableEmbedding?: boolean;
+  /** Default query retrieval tuning for all query calls. */
+  query?: QueryTuningOptions;
 };
 
 export type CreateNodeInput = {
@@ -85,7 +91,13 @@ export type GraphQueryResult = QueryResult & {
   method: QueryMethod;
 };
 
-export type { ListEdgesOptions, ListNodesOptions, SearchResult, SemanticSearchOptions };
+export type {
+  ListEdgesOptions,
+  ListNodesOptions,
+  QueryOptions,
+  SearchResult,
+  SemanticSearchOptions,
+};
 
 export class GraphClient {
   private readonly storageProvider: BaseStorageProvider;
@@ -95,12 +107,14 @@ export class GraphClient {
   private readonly ontology: Ontology;
   private readonly ontologyRegistry: OntologyRegistry;
   private readonly enableEmbedding: boolean;
+  private readonly defaultQueryTuning: QueryTuningOptions;
 
   constructor(private readonly options: GraphClientOptions) {
     this.storageProvider = options.storageProvider;
     this.llmProvider = options.llmProvider;
     this.ontology = options.ontology;
     this.enableEmbedding = options.enableEmbedding ?? false;
+    this.defaultQueryTuning = options.query ?? {};
     this.ontologyRegistry = OntologyRegistry.parse(options.ontology);
     this.textExtractor = new TextExtractor(options.llmProvider, options.ontology);
     this.llmExtractor = new LLMExtractor(options.llmProvider);
@@ -157,10 +171,7 @@ export class GraphClient {
     return filterEdges(edges, options);
   }
 
-  async searchNodes(
-    query: string,
-    options?: SemanticSearchOptions,
-  ): Promise<SearchResult<Node>[]> {
+  async searchNodes(query: string, options?: SemanticSearchOptions): Promise<SearchResult<Node>[]> {
     log.info("Searching nodes", { query, topK: options?.topK });
     const nodes = filterNodes(await this.storageProvider.listNodes(), { type: options?.type });
     const [queryEmbedding] = await this.llmProvider.embed([query]);
@@ -178,10 +189,7 @@ export class GraphClient {
     });
   }
 
-  async searchEdges(
-    query: string,
-    options?: SemanticSearchOptions,
-  ): Promise<SearchResult<Edge>[]> {
+  async searchEdges(query: string, options?: SemanticSearchOptions): Promise<SearchResult<Edge>[]> {
     log.info("Searching edges", { query, topK: options?.topK });
     const edges = filterEdges(await this.storageProvider.listEdges(), { type: options?.type });
     const [queryEmbedding] = await this.llmProvider.embed([query]);
@@ -199,10 +207,7 @@ export class GraphClient {
     });
   }
 
-  async getGraph(options?: {
-    nodes?: ListNodesOptions;
-    edges?: ListEdgesOptions;
-  }): Promise<Graph> {
+  async getGraph(options?: { nodes?: ListNodesOptions; edges?: ListEdgesOptions }): Promise<Graph> {
     const [nodes, edges] = await Promise.all([
       this.listNodes(options?.nodes),
       this.listEdges(options?.edges),
@@ -296,28 +301,39 @@ export class GraphClient {
     return expandNeighborhoodBfs(seedIds, edges, maxHops, options?.topK);
   }
 
-  async query(
-    input: string,
-    method: QueryMethod = "combined",
-  ): Promise<GraphQueryResult> {
-    log.info("Querying graph", { method });
-    const result = await this.getQueryProvider(method).query(input);
-    log.debug("Query complete", { method, materials: result.materials.length });
-    return { ...result, method };
+  async query(input: string, options: QueryOptions = {}): Promise<GraphQueryResult> {
+    const resolved = {
+      method: options.method ?? "combined",
+      topK: options.topK ?? this.defaultQueryTuning.topK,
+      seedK: options.seedK ?? this.defaultQueryTuning.seedK,
+      maxHops: options.maxHops ?? this.defaultQueryTuning.maxHops,
+    };
+
+    log.info("Querying graph", {
+      method: resolved.method,
+      topK: resolved.topK,
+      seedK: resolved.seedK,
+      maxHops: resolved.maxHops,
+    });
+    const result = await this.getQueryProvider(resolved.method!, resolved).query(input);
+    log.debug("Query complete", { method: resolved.method, materials: result.materials.length });
+    return { ...result, method: resolved.method! };
   }
 
-  private queryProviders: Partial<Record<QueryMethod, BaseQueryProvider>> = {};
+  private queryProviderCache = new Map<string, BaseQueryProvider>();
 
-  private getQueryProvider(method: QueryMethod): BaseQueryProvider {
-    const cached = this.queryProviders[method];
+  private getQueryProvider(method: QueryMethod, tuning: QueryTuningOptions): BaseQueryProvider {
+    const key = `${method}:${tuning.topK ?? ""}:${tuning.seedK ?? ""}:${tuning.maxHops ?? ""}`;
+    const cached = this.queryProviderCache.get(key);
     if (cached) {
       return cached;
     }
 
-    log.debug("Creating query provider", { method });
+    log.debug("Creating query provider", { method, ...tuning });
     const options = {
       llmProvider: this.llmProvider,
       storageProvider: this.storageProvider,
+      ...tuning,
     };
 
     const provider = (() => {
@@ -339,7 +355,7 @@ export class GraphClient {
       }
     })();
 
-    this.queryProviders[method] = provider;
+    this.queryProviderCache.set(key, provider);
     return provider;
   }
 

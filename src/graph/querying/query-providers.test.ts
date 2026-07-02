@@ -169,6 +169,20 @@ describe("BfsSearchQueryProvider", () => {
     expect(result.materials.join("\n")).toContain("Leviticus");
     expect(result.answer).toBe("Aaron is connected to Leviticus.");
   });
+
+  it("limits BFS materials when topK is set", async () => {
+    const provider = new BfsSearchQueryProvider({
+      llmProvider: new MockLLMProvider([1, 0, 0]),
+      storageProvider,
+      seedK: 1,
+      maxHops: 2,
+      topK: 2,
+    });
+
+    const context = await provider.buildContext("Which books mention Aaron's sons?", graph);
+
+    expect(context.materials.filter((material) => material.startsWith("Node "))).toHaveLength(2);
+  });
 });
 
 describe("ShortestPathSearchQueryProvider", () => {

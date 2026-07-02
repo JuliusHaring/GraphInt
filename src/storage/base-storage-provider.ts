@@ -1,5 +1,7 @@
 import { Node, Edge } from "./types.js";
 
+/** Base options shared by all storage providers. */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- extended by provider-specific option types
 export interface StorageProviderOptions {}
 
 export abstract class BaseStorageProvider {
