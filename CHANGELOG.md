@@ -7,10 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0](https://github.com/JuliusHaring/GraphInt/compare/v0.2.2...v0.3.0) (2026-07-02)
 
-
 ### Bug Fixes
 
-* remove cli ([e9ef278](https://github.com/JuliusHaring/GraphInt/commit/e9ef27802ef52966425f42aa7be9770925b6e0fd))
+- remove cli ([e9ef278](https://github.com/JuliusHaring/GraphInt/commit/e9ef27802ef52966425f42aa7be9770925b6e0fd))
 
 ## [0.2.4](https://github.com/JuliusHaring/GraphInt/compare/v0.2.2...v0.2.4) (2026-07-02)
 
@@ -64,10 +63,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add embedding ([ff87975](https://github.com/JuliusHaring/GraphInt/commit/ff8797592c13e50d9a5e78c8f2cd6c8743ac4b3a))
 - add logging ([ca244ff](https://github.com/JuliusHaring/GraphInt/commit/ca244ff525845ab2ac8acc11d6db5334ed7dd98c))
 - fill graph-client ([bcda927](https://github.com/JuliusHaring/GraphInt/commit/bcda9270abc2998b356af8d01d87f33792efcdaf))
-
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).

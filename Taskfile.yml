@@ -45,6 +45,9 @@ tasks:
     deps: [test]
     cmds:
       - npx commit-and-tag-version
+      - npm run fl
+      - git add CHANGELOG.md package.json package-lock.json
+      - git diff --cached --quiet || git commit --amend --no-edit --no-verify
       - npm publish
 
   release:patch:
@@ -52,6 +55,9 @@ tasks:
     deps: [test]
     cmds:
       - npx commit-and-tag-version --release-as patch
+      - npm run fl
+      - git add CHANGELOG.md package.json package-lock.json
+      - git diff --cached --quiet || git commit --amend --no-edit --no-verify
       - npm publish
 
   release:minor:
@@ -59,6 +65,9 @@ tasks:
     deps: [test]
     cmds:
       - npx commit-and-tag-version --release-as minor
+      - npm run fl
+      - git add CHANGELOG.md package.json package-lock.json
+      - git diff --cached --quiet || git commit --amend --no-edit --no-verify
       - npm publish
 
   release:major:
@@ -66,6 +75,9 @@ tasks:
     deps: [test]
     cmds:
       - npx commit-and-tag-version --release-as major
+      - npm run fl
+      - git add CHANGELOG.md package.json package-lock.json
+      - git diff --cached --quiet || git commit --amend --no-edit --no-verify
       - npm publish
 
   release:first:

@@ -12,5 +12,6 @@
     { "type": "build", "section": "Build System", "hidden": true },
     { "type": "ci", "section": "Continuous Integration", "hidden": true }
   ],
-  "releaseCommitMessageFormat": "chore(release): {{currentTag}}"
+  "releaseCommitMessageFormat": "chore(release): {{currentTag}}",
+  "noVerify": true
 }
