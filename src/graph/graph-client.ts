@@ -312,9 +312,9 @@ export class GraphClient {
     return edge;
   }
 
-  deleteNode(id: string): Promise<void> {
+  async deleteNode(id: string): Promise<void> {
     log.info("Deleting node", { id });
-    return this.storageProvider.deleteNode(id);
+    await this.storageProvider.deleteNode(id);
   }
 
   deleteEdge(id: string): Promise<void> {

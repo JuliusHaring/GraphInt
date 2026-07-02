@@ -157,4 +157,36 @@ describe("GraphClient write semantics", () => {
     expect(await client.hasNode("alice")).toBe(true);
     expect(await client.tryGetNode("alice")).toMatchObject({ id: "alice" });
   });
+
+  it("deletes incident edges when deleting a node", async () => {
+    const client = createClient();
+    await client.createNode({
+      id: "alice",
+      type: "person",
+      properties: { name: "Alice", nickname: "Al" },
+    });
+    await client.createNode({ id: "acme", type: "company", properties: { name: "Acme" } });
+    await client.createNode({ id: "other", type: "company", properties: { name: "Other Co" } });
+
+    await client.createEdge({
+      id: "e1",
+      type: "works_at",
+      from: "alice",
+      to: "acme",
+      properties: { since: 2020, title: "Engineer" },
+    });
+    await client.createEdge({
+      id: "e2",
+      type: "works_at",
+      from: "alice",
+      to: "other",
+      properties: { since: 2021, title: "Consultant" },
+    });
+
+    await client.deleteNode("alice");
+
+    expect(await client.hasNode("alice")).toBe(false);
+    await expect(client.getEdge("e1")).rejects.toThrow('Edge with id "e1" not found');
+    await expect(client.getEdge("e2")).rejects.toThrow('Edge with id "e2" not found');
+  });
 });

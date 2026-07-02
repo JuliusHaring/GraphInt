@@ -58,10 +58,9 @@ export class MemoryStorageProvider extends BaseStorageProvider {
     return Promise.resolve();
   }
 
-  deleteNode(id: string): Promise<void> {
+  protected async deleteNodeRecord(id: string): Promise<void> {
     this.nodes = this.nodes.filter((node) => node.id !== id);
     log.debug("Deleted node", { id });
-    return Promise.resolve();
   }
 
   async getEdge(id: string): Promise<Edge> {

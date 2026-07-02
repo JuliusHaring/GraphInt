@@ -221,6 +221,11 @@ export class SqliteStorageProvider extends BaseStorageProvider {
 
   async deleteNode(id: string): Promise<void> {
     await this.ready;
+    await run(this.db, "DELETE FROM edges WHERE from_id = ? OR to_id = ?", [id, id]);
+    await this.deleteNodeRecord(id);
+  }
+
+  protected async deleteNodeRecord(id: string): Promise<void> {
     await run(this.db, "DELETE FROM nodes WHERE id = ?", [id]);
     log.debug("Deleted node", { id });
   }

@@ -13,7 +13,6 @@ export abstract class BaseStorageProvider {
   abstract createNode(node: Node): Promise<void>;
   abstract updateNode(node: Node): Promise<void>;
   abstract upsertNode(node: Node): Promise<void>;
-  abstract deleteNode(id: string): Promise<void>;
   abstract getEdge(id: string): Promise<Edge>;
   abstract getEdges(ids: string[]): Promise<Edge[]>;
   abstract listEdges(): Promise<Edge[]>;
@@ -21,6 +20,19 @@ export abstract class BaseStorageProvider {
   abstract updateEdge(edge: Edge): Promise<void>;
   abstract upsertEdge(edge: Edge): Promise<void>;
   abstract deleteEdge(id: string): Promise<void>;
+
+  /** Delete a node and all incident edges. */
+  async deleteNode(id: string): Promise<void> {
+    const edges = await this.listEdges();
+    for (const edge of edges) {
+      if (edge.from === id || edge.to === id) {
+        await this.deleteEdge(edge.id);
+      }
+    }
+    await this.deleteNodeRecord(id);
+  }
+
+  protected abstract deleteNodeRecord(id: string): Promise<void>;
 
   protected notFound(entity: "Node" | "Edge", id: string): Error {
     return new Error(`${entity} with id "${id}" not found`);

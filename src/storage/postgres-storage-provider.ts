@@ -204,6 +204,11 @@ export class PostgresStorageProvider extends BaseStorageProvider {
 
   async deleteNode(id: string): Promise<void> {
     await this.ready;
+    await this.pool.query("DELETE FROM edges WHERE from_id = $1 OR to_id = $1", [id]);
+    await this.deleteNodeRecord(id);
+  }
+
+  protected async deleteNodeRecord(id: string): Promise<void> {
     await this.pool.query("DELETE FROM nodes WHERE id = $1", [id]);
     log.debug("Deleted node", { id });
   }
