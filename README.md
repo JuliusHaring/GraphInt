@@ -215,39 +215,42 @@ fix: handle empty seed lists in BFS expansion
 feat!: rename QueryMethod "bfs" to "breadth_first"
 ```
 
-Install git hooks (format/lint on commit and conventional commit messages):
+Install git hooks (runs automatically on `npm install`):
+
+- **pre-commit** — `npm run fl` via [pre-commit](https://www.npmjs.com/package/pre-commit)
+- **commit-msg** — conventional commit lint via commitlint
 
 ```bash
-task hooks:install
+npm install
 ```
 
 Lint the latest commit manually:
 
 ```bash
-task commitlint
+npm run commitlint
 ```
 
 ### Releases
 
-Releases use [Task](https://taskfile.dev/) and [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version):
+Releases use [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version):
 
-| Task                 | Description                                                                                |
-| -------------------- | ------------------------------------------------------------------------------------------ |
-| `task test`          | Run unit tests                                                                             |
-| `task changelog`     | Preview the next version and changelog (dry run)                                           |
-| `task release`       | Run tests, bump semver from commits, update `CHANGELOG.md`, commit, tag, and `npm publish` |
-| `task release:patch` | Force a patch release and publish                                                          |
-| `task release:minor` | Force a minor release and publish                                                          |
-| `task release:major` | Force a major release and publish                                                          |
-| `task release:first` | First release only (no version bump) and publish                                           |
+| Script                  | Description                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------ |
+| `npm run test:unit`       | Run unit tests                                                                             |
+| `npm run changelog`       | Preview the next version and changelog (dry run)                                           |
+| `npm run release`         | Run tests, bump semver from commits, update `CHANGELOG.md`, commit, tag, and `npm publish` |
+| `npm run release:patch`   | Force a patch release and publish                                                          |
+| `npm run release:minor`   | Force a minor release and publish                                                          |
+| `npm run release:major`   | Force a major release and publish                                                          |
+| `npm run release:first`   | First release only (no version bump) and publish                                           |
 
 Typical flow:
 
 ```bash
-task hooks:install
+npm install
 # ... merge conventional commits to main ...
-task changelog    # preview
-task release      # version bump + CHANGELOG + tag + npm publish
+npm run changelog    # preview
+npm run release      # version bump + CHANGELOG + tag + npm publish
 git push --follow-tags
 ```
 
