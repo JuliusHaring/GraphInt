@@ -7,9 +7,15 @@ tasks:
       - task --list-all
 
   hooks:install:
-    desc: Install git commit-msg hook for conventional commits
+    desc: Install git hooks (pre-commit format/lint and commit-msg conventional commits)
     cmds:
       - mkdir -p .git/hooks
+      - |
+        cat > .git/hooks/pre-commit << 'EOF'
+        #!/bin/sh
+        npm run fl
+        EOF
+      - chmod +x .git/hooks/pre-commit
       - |
         cat > .git/hooks/commit-msg << 'EOF'
         #!/bin/sh

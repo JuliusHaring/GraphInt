@@ -165,7 +165,7 @@ fix: handle empty seed lists in BFS expansion
 feat!: rename QueryMethod "bfs" to "breadth_first"
 ```
 
-Install the commit-msg hook (validates messages on `git commit`):
+Install git hooks (format/lint on commit and conventional commit messages):
 
 ```bash
 task hooks:install
