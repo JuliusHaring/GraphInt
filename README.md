@@ -107,6 +107,54 @@ The `bfs` query method uses the same logic internally (`maxHops` + `topK` from q
 
 Define node and edge types with typed properties. Use the `Ontology` type or validate at runtime with `OntologySchema`.
 
+## Development
+
+### Conventional commits
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) for semantic versioning and changelog generation.
+
+```
+feat: add getBfsNeighborhood to GraphClient
+fix: handle empty seed lists in BFS expansion
+feat!: rename QueryMethod "bfs" to "breadth_first"
+```
+
+Install the commit-msg hook (validates messages on `git commit`):
+
+```bash
+task hooks:install
+```
+
+Lint the latest commit manually:
+
+```bash
+task commitlint
+```
+
+### Releases
+
+Releases use [Task](https://taskfile.dev/) and [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version):
+
+| Task | Description |
+| --- | --- |
+| `task test` | Run unit tests |
+| `task changelog` | Preview the next version and changelog (dry run) |
+| `task release` | Run tests, bump semver from commits, update `CHANGELOG.md`, commit, tag, and `npm publish` |
+| `task release:patch` | Force a patch release and publish |
+| `task release:minor` | Force a minor release and publish |
+| `task release:major` | Force a major release and publish |
+| `task release:first` | First release only (no version bump) and publish |
+
+Typical flow:
+
+```bash
+task hooks:install
+# ... merge conventional commits to main ...
+task changelog    # preview
+task release      # version bump + CHANGELOG + tag + npm publish
+git push --follow-tags
+```
+
 ## License
 
 MIT
