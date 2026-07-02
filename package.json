@@ -1,7 +1,7 @@
 {
   "name": "graphint",
-  "version": "0.0.0",
-  "description": "A graph intelligence package supporting databases and LLM providers",
+  "version": "0.1.0",
+  "description": "Graph intelligence library for ingesting documents, building typed knowledge graphs, and querying them with LLMs",
   "keywords": [
     "graph",
     "database",
@@ -13,11 +13,21 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "files": [
     "dist"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "tsc",
+    "prepublishOnly": "npm run build",
     "dev": "tsc --watch",
     "test": "vitest",
     "test:build-db": "tsx tests/setup/build-database.ts",

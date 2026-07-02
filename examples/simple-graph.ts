@@ -1,12 +1,12 @@
-import { Ontology } from "../src/graph/ontology.js";
-import { GraphClient, createLogger } from "../src/index.js";
-import { GeminiLLMProvider } from "../src/llm/gemini-llm-provider.js";
-import { SqliteStorageProvider } from "../src/storage/sqlite-storage-provider.js";
+import {
+  GraphClient,
+  GeminiLLMProvider,
+  SqliteStorageProvider,
+  type Ontology,
+} from "../src/index.js";
 import dotenv from "dotenv";
 
 dotenv.config();
-
-const log = createLogger("simple-graph");
 
 async function main() {
   const ontology: Ontology = {
@@ -73,10 +73,10 @@ async function main() {
   const result = await client.query(
     "How did Marie Curie's work shape the broader field of radioactivity?",
   );
-  log.info("Answer", { result });
+  console.log(result);
 }
 
 main().catch((error) => {
-  log.error("Example failed", { error: error instanceof Error ? error.message : String(error) });
+  console.error("Example failed:", error instanceof Error ? error.message : String(error));
   process.exit(1);
 });
