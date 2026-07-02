@@ -58,9 +58,8 @@ console.log(result.materials);
 | `createEdge` / `updateEdge` / `deleteEdge` | Strict create, update existing, and delete for edges                                                                     |
 | `getNode` / `getEdge`                      | Read by id (throws if missing)                                                                                           |
 | `hasNode` / `hasEdge`                      | Check existence by id                                                                                                    |
-| `getNeighbors(nodeId, options?)`           | 1-hop neighbors and connecting edges; `direction`: `in`, `out`, or `both`                                                |
+| `getNeighbourhood(seeds, options?)`        | BFS expansion from seed node(s); default `maxHops` 1; optional `direction`, `topK`                                       |
 | `getShortestPaths(from, to, limit?)`       | Up to `limit` shortest simple paths between two nodes, ordered by hop count                                              |
-| `getBfsNeighborhood(seeds, options?)`      | BFS expansion from seed node(s); `maxHops` (default 2) and optional `topK` node cap                                      |
 | `query(question, options?)`                | Natural-language query; returns `{ query, answer, materials, method }`. Options: `{ method?, topK?, seedK?, maxHops? }`. |
 
 ### Storage providers
@@ -112,21 +111,22 @@ for (const path of paths) {
 
 ### Neighborhood expansion
 
-Expand outward from one or more seed nodes with BFS:
+Expand outward from one or more seed nodes with BFS. Defaults to 1 hop (direct neighbours):
 
 ```ts
 import { type GraphNeighborhood } from "graphtide";
 
-const neighborhood: GraphNeighborhood = await client.getBfsNeighborhood("alice", {
+const direct = await client.getNeighbourhood("alice");
+const wider: GraphNeighborhood = await client.getNeighbourhood("alice", {
   maxHops: 2,
   topK: 5,
 });
 
-console.log(neighborhood.nodeIds); // closest nodes first, capped at topK
-console.log(neighborhood.edges); // edges between included nodes
+console.log(wider.nodeIds); // seeds plus closest nodes, capped at topK
+console.log(wider.edges); // edges between included nodes
 ```
 
-The `bfs` query method uses the same logic internally (`maxHops` + `topK` from query options).
+The `bfs` query method uses the same BFS logic internally (`maxHops` + `topK` from query options).
 
 ### Query methods
 

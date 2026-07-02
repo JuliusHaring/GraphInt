@@ -224,12 +224,12 @@ describe("GraphClient write semantics", () => {
       properties: {},
     });
 
-    const outgoing = await client.getNeighbors("alice", { direction: "out" });
-    expect(outgoing.nodeIds).toEqual(["acme"]);
+    const outgoing = await client.getNeighbourhood("alice", { direction: "out" });
+    expect(outgoing.nodeIds).toEqual(["alice", "acme"]);
     expect(outgoing.edges.map((edge) => edge.id)).toEqual(["e1"]);
 
-    const incoming = await client.getNeighbors("alice", { direction: "in" });
-    expect(incoming.nodeIds).toEqual(["bob"]);
+    const incoming = await client.getNeighbourhood("alice", { direction: "in" });
+    expect(incoming.nodeIds).toEqual(["alice", "bob"]);
     expect(incoming.edges.map((edge) => edge.id)).toEqual(["e2"]);
   });
 });

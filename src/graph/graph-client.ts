@@ -101,13 +101,11 @@ export type UpsertResult<T> = {
   created: boolean;
 };
 
-export type NeighborsOptions = {
+export type NeighbourhoodOptions = {
+  /** Hop radius from each seed. Default 1. */
+  maxHops?: number;
   direction?: EdgeDirection;
-};
-
-export type NeighborsResult = {
-  nodeIds: string[];
-  edges: Edge[];
+  topK?: number;
 };
 
 export type GraphQueryResult = QueryResult & {
@@ -353,12 +351,25 @@ export class GraphClient {
     return this.storageProvider.deleteEdge(id);
   }
 
-  async getNeighbors(nodeId: string, options?: NeighborsOptions): Promise<NeighborsResult> {
+  async getNeighbourhood(
+    seeds: string | string[],
+    options?: NeighbourhoodOptions,
+  ): Promise<GraphNeighborhood> {
+    const seedIds = new Set(Array.isArray(seeds) ? seeds : [seeds]);
+    const maxHops = options?.maxHops ?? 1;
     const direction = options?.direction ?? "both";
-    log.info("Getting neighbors", { nodeId, direction });
-    const edges = await this.storageProvider.listEdgesForNode(nodeId, direction);
-    const nodeIds = [...new Set(edges.map((edge) => (edge.from === nodeId ? edge.to : edge.from)))];
-    return { nodeIds, edges };
+    log.info("Expanding neighbourhood", {
+      seeds: seedIds.size,
+      maxHops,
+      direction,
+      topK: options?.topK,
+    });
+    return expandNeighborhoodBfsWithLookup(
+      seedIds,
+      (nodeId) => this.storageProvider.listEdgesForNode(nodeId, direction),
+      maxHops,
+      options?.topK,
+    );
   }
 
   async getShortestPaths(from: string, to: string, limit = 1): Promise<GraphPath[]> {
@@ -372,25 +383,6 @@ export class GraphClient {
         const nodes = await this.storageProvider.getNodes(nodeIds);
         return new Map(nodes.map((node) => [node.id, node]));
       },
-    );
-  }
-
-  async getBfsNeighborhood(
-    seeds: string | string[],
-    options?: { maxHops?: number; topK?: number },
-  ): Promise<GraphNeighborhood> {
-    const seedIds = new Set(Array.isArray(seeds) ? seeds : [seeds]);
-    const maxHops = options?.maxHops ?? 2;
-    log.info("Expanding BFS neighborhood", {
-      seeds: seedIds.size,
-      maxHops,
-      topK: options?.topK,
-    });
-    return expandNeighborhoodBfsWithLookup(
-      seedIds,
-      (nodeId) => this.storageProvider.listEdgesForNode(nodeId),
-      maxHops,
-      options?.topK,
     );
   }
 
