@@ -1,6 +1,6 @@
 {
   "name": "graphtide",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Graph intelligence library for ingesting documents, building typed knowledge graphs, and querying them with LLMs",
   "keywords": [
     "graph",
@@ -46,6 +46,7 @@
     "commitlint": "commitlint --last --verbose",
     "changelog": "commit-and-tag-version --dry-run",
     "release:amend": "npm run fl && git add CHANGELOG.md package.json package-lock.json && (git diff --cached --quiet || git commit --amend --no-edit --no-verify)",
+    "release:initial": "npm run test:unit && commit-and-tag-version --release-as 0.1.0 && npm run release:amend && npm publish",
     "release": "npm run test:unit && commit-and-tag-version && npm run release:amend && npm publish",
     "release:patch": "npm run test:unit && commit-and-tag-version --release-as patch && npm run release:amend && npm publish",
     "release:minor": "npm run test:unit && commit-and-tag-version --release-as minor && npm run release:amend && npm publish",

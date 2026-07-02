@@ -234,31 +234,15 @@ npm run commitlint
 
 Releases use [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version):
 
-| Script                  | Description                                                      |
-| ----------------------- | ---------------------------------------------------------------- |
-| `npm run test:unit`     | Run unit tests                                                   |
-| `npm run changelog`     | Preview the next version and changelog (dry run)                 |
-| `npm run release`       | Bump semver from commits since last tag, changelog, tag, publish |
-| `npm run release:patch` | Force a patch release and publish                                |
-| `npm run release:minor` | Force a minor release and publish                                |
-| `npm run release:major` | Force a major release and publish                                |
-
-First publish after a reset:
-
-```bash
-npm install
-npm run changelog          # preview
-npm run release:initial    # v0.1.0 → CHANGELOG + tag + npm publish
-git push --follow-tags
-```
-
-Subsequent releases:
-
-```bash
-npm run changelog    # preview
-npm run release      # semver bump from conventional commits
-git push --follow-tags
-```
+| Script                    | Description                                                      |
+| ------------------------- | ---------------------------------------------------------------- |
+| `npm run test:unit`       | Run unit tests                                                   |
+| `npm run changelog`       | Preview the next version and changelog (dry run)                 |
+| `npm run release:initial` | First release: v0.1.0, changelog, tag, and npm publish           |
+| `npm run release`         | Bump semver from commits since last tag, changelog, tag, publish |
+| `npm run release:patch`   | Force a patch release and publish                                |
+| `npm run release:minor`   | Force a minor release and publish                                |
+| `npm run release:major`   | Force a major release and publish                                |
 
 ## License
 
