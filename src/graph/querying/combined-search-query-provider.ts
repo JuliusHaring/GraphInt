@@ -6,6 +6,7 @@ import { GlobalSearchQueryProvider } from "./global-search-query-provider.js";
 import { LocalSearchQueryProvider } from "./local-search-query-provider.js";
 import { ShortestPathSearchQueryProvider } from "./shortest-path-search-query-provider.js";
 import { buildCombinedAnswerMessages, buildQueryRouterMessages } from "./prompts.js";
+import { Message } from "../../llm/types.js";
 import { QueryContext, QueryGraph, QueryPlanSchema, QueryStrategy } from "./types.js";
 
 export class CombinedSearchQueryProvider extends BaseQueryProvider {
@@ -23,8 +24,12 @@ export class CombinedSearchQueryProvider extends BaseQueryProvider {
     };
   }
 
-  async buildContext(query: string, graph: QueryGraph): Promise<QueryContext> {
-    const strategies = await this.selectStrategies(query);
+  async buildContext(
+    query: string,
+    graph: QueryGraph,
+    history: Message[] = [],
+  ): Promise<QueryContext> {
+    const strategies = await this.selectStrategies(query, history);
     this.log.info("Selected strategies", { strategies });
     const materials = await this.collectMaterials(query, graph, strategies);
     this.log.debug("Collected materials", {
@@ -38,14 +43,19 @@ export class CombinedSearchQueryProvider extends BaseQueryProvider {
     };
   }
 
-  protected async answerFromContext(context: QueryContext): Promise<string> {
+  protected async answerFromContext(
+    context: QueryContext,
+    history: Message[] = [],
+  ): Promise<string> {
     this.log.debug("Synthesizing combined answer");
-    return this.llmProvider.generate(buildCombinedAnswerMessages(context.query, context.materials));
+    return this.llmProvider.generate(
+      buildCombinedAnswerMessages(context.query, context.materials, history),
+    );
   }
 
-  private async selectStrategies(query: string): Promise<QueryStrategy[]> {
+  private async selectStrategies(query: string, history: Message[] = []): Promise<QueryStrategy[]> {
     const plan = await this.llmProvider.generate(
-      buildQueryRouterMessages(query),
+      buildQueryRouterMessages(query, history),
       undefined,
       QueryPlanSchema,
     );

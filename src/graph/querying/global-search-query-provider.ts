@@ -1,9 +1,14 @@
+import { Message } from "../../llm/types.js";
 import { BaseQueryProvider } from "./base-query-provider.js";
 import { QueryContext, QueryGraph } from "./types.js";
 import { formatCommunity, topKRelevant } from "./utils.js";
 
 export class GlobalSearchQueryProvider extends BaseQueryProvider {
-  async buildContext(query: string, graph: QueryGraph): Promise<QueryContext> {
+  async buildContext(
+    query: string,
+    graph: QueryGraph,
+    _history?: Message[],
+  ): Promise<QueryContext> {
     this.log.debug("Building global search context");
     const communities = await this.ensureCommunities(graph);
     if (communities.length === 0) {

@@ -399,8 +399,11 @@ export class GraphClient {
       topK: resolved.topK,
       seedK: resolved.seedK,
       maxHops: resolved.maxHops,
+      historyTurns: options.history?.length ?? 0,
     });
-    const result = await this.getQueryProvider(resolved.method!, resolved).query(input);
+    const result = await this.getQueryProvider(resolved.method!, resolved).query(input, {
+      history: options.history,
+    });
     log.debug("Query complete", { method: resolved.method, materials: result.materials.length });
     return { ...result, method: resolved.method! };
   }

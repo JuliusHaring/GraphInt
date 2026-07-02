@@ -3,6 +3,10 @@ import { Message } from "../../llm/types.js";
 export const CommunitySummarySystemPrompt =
   "Write a concise community summary of the entities and relationships below.";
 
+export function normalizeQueryHistory(history: Message[] = []): Message[] {
+  return history.filter((message) => message.role !== "system");
+}
+
 export function buildCommunitySummaryUserMessage(materials: string): Message {
   return {
     role: "user",
@@ -27,9 +31,14 @@ export function buildQueryAnswerUserMessage(query: string, materials: string): M
   };
 }
 
-export function buildQueryAnswerMessages(query: string, materials: string): Message[] {
+export function buildQueryAnswerMessages(
+  query: string,
+  materials: string,
+  history: Message[] = [],
+): Message[] {
   return [
     { role: "system", content: QueryAnswerSystemPrompt },
+    ...normalizeQueryHistory(history),
     buildQueryAnswerUserMessage(query, materials),
   ];
 }
@@ -53,8 +62,12 @@ export function buildQueryRouterUserMessage(query: string): Message {
   };
 }
 
-export function buildQueryRouterMessages(query: string): Message[] {
-  return [{ role: "system", content: QueryRouterSystemPrompt }, buildQueryRouterUserMessage(query)];
+export function buildQueryRouterMessages(query: string, history: Message[] = []): Message[] {
+  return [
+    { role: "system", content: QueryRouterSystemPrompt },
+    ...normalizeQueryHistory(history),
+    buildQueryRouterUserMessage(query),
+  ];
 }
 
 export const CombinedAnswerSystemPrompt =
@@ -67,9 +80,14 @@ export function buildCombinedAnswerUserMessage(query: string, materials: string[
   };
 }
 
-export function buildCombinedAnswerMessages(query: string, materials: string[]): Message[] {
+export function buildCombinedAnswerMessages(
+  query: string,
+  materials: string[],
+  history: Message[] = [],
+): Message[] {
   return [
     { role: "system", content: CombinedAnswerSystemPrompt },
+    ...normalizeQueryHistory(history),
     buildCombinedAnswerUserMessage(query, materials),
   ];
 }

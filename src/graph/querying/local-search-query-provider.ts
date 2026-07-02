@@ -1,3 +1,4 @@
+import { Message } from "../../llm/types.js";
 import { BaseQueryProvider } from "./base-query-provider.js";
 import { QueryContext, QueryGraph } from "./types.js";
 import {
@@ -9,7 +10,11 @@ import {
 } from "./utils.js";
 
 export class LocalSearchQueryProvider extends BaseQueryProvider {
-  async buildContext(query: string, graph: QueryGraph): Promise<QueryContext> {
+  async buildContext(
+    query: string,
+    graph: QueryGraph,
+    _history?: Message[],
+  ): Promise<QueryContext> {
     this.log.debug("Building local search context");
     const seeds = await topKRelevant(
       this.llmProvider,

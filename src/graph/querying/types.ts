@@ -1,4 +1,5 @@
 import { Edge, Node } from "../ontology.js";
+import { Message } from "../../llm/types.js";
 import { z } from "zod";
 
 export const QueryStrategySchema = z.enum([
@@ -30,7 +31,26 @@ export type QueryTuningOptions = {
 
 export type QueryOptions = QueryTuningOptions & {
   method?: QueryMethod;
+  /** Prior user/assistant turns for multi-turn queries. System messages are ignored. */
+  history?: Message[];
 };
+
+export type QueryRunOptions = {
+  graph?: QueryGraph;
+  history?: Message[];
+};
+
+export function normalizeQueryRunOptions(options?: QueryGraph | QueryRunOptions): QueryRunOptions {
+  if (!options) {
+    return {};
+  }
+
+  if ("nodes" in options && "edges" in options) {
+    return { graph: options };
+  }
+
+  return options;
+}
 
 export type Community = {
   id: string;

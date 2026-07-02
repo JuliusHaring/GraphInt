@@ -87,7 +87,7 @@ class UnusedStorageProvider extends BaseStorageProvider {
     throw new Error("unused");
   }
 
-  deleteNode(): Promise<void> {
+  protected deleteNodeRecord(): Promise<void> {
     throw new Error("unused");
   }
 
@@ -168,6 +168,41 @@ describe("BfsSearchQueryProvider", () => {
     expect(result.materials.length).toBeGreaterThan(0);
     expect(result.materials.join("\n")).toContain("Leviticus");
     expect(result.answer).toBe("Aaron is connected to Leviticus.");
+  });
+
+  it("passes conversation history to the answer prompt", async () => {
+    const seenMessages: Message[] = [];
+    class HistoryCapturingLLMProvider extends MockLLMProvider {
+      generate(messages: Message[]): Promise<string> {
+        seenMessages.push(...messages);
+        return super.generate(messages);
+      }
+    }
+
+    const provider = new BfsSearchQueryProvider({
+      llmProvider: new HistoryCapturingLLMProvider([1, 0, 0], nodes, "Follow-up answer"),
+      storageProvider,
+      seedK: 1,
+      maxHops: 2,
+    });
+
+    await provider.query("Which son is that?", {
+      graph,
+      history: [
+        { role: "user", content: "Who are Aaron's sons?" },
+        { role: "assistant", content: "Nadab is one of Aaron's sons." },
+      ],
+    });
+
+    expect(seenMessages[1]).toEqual({
+      role: "user",
+      content: "Who are Aaron's sons?",
+    });
+    expect(seenMessages[2]).toEqual({
+      role: "assistant",
+      content: "Nadab is one of Aaron's sons.",
+    });
+    expect(seenMessages.at(-1)?.content).toContain("Question: Which son is that?");
   });
 
   it("limits BFS materials when topK is set", async () => {

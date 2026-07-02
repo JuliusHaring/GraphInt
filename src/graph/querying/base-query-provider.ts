@@ -1,8 +1,16 @@
 import { BaseLLMProvider } from "../../llm/base-llm-provider.js";
+import { Message } from "../../llm/types.js";
 import { BaseStorageProvider } from "../../storage/base-storage-provider.js";
 import { createLogger, Logger } from "../../utils/logger.js";
 import { buildCommunitySummaryMessages, buildQueryAnswerMessages } from "./prompts.js";
-import { Community, QueryContext, QueryGraph, QueryResult } from "./types.js";
+import {
+  Community,
+  QueryContext,
+  QueryGraph,
+  QueryResult,
+  QueryRunOptions,
+  normalizeQueryRunOptions,
+} from "./types.js";
 import { buildGraphSignature, detectCommunities, formatEdge, formatNode } from "./utils.js";
 
 export type QueryProviderOptions = {
@@ -37,7 +45,11 @@ export abstract class BaseQueryProvider {
     this.log = createLogger(this.constructor.name);
   }
 
-  abstract buildContext(query: string, graph: QueryGraph): Promise<QueryContext>;
+  abstract buildContext(
+    query: string,
+    graph: QueryGraph,
+    history?: Message[],
+  ): Promise<QueryContext>;
 
   async loadGraph(): Promise<QueryGraph> {
     this.log.debug("Loading graph");
@@ -56,16 +68,21 @@ export abstract class BaseQueryProvider {
     return { ...graph, communities };
   }
 
-  async query(query: string, graph?: QueryGraph): Promise<QueryResult> {
-    this.log.info("Running query", { query });
-    const context = await this.buildContext(query, graph ?? (await this.loadGraph()));
+  async query(query: string, options?: QueryGraph | QueryRunOptions): Promise<QueryResult> {
+    const { graph: providedGraph, history = [] } = normalizeQueryRunOptions(options);
+    this.log.info("Running query", { query, historyTurns: history.length });
+    const graph = providedGraph ?? (await this.loadGraph());
+    const context = await this.buildContext(query, graph, history);
     this.log.debug("Context built", { materials: context.materials.length });
-    const answer = await this.answerFromContext(context);
+    const answer = await this.answerFromContext(context, history);
     return { ...context, answer };
   }
 
-  protected async answerFromContext(context: QueryContext): Promise<string> {
-    return this.answer(context);
+  protected async answerFromContext(
+    context: QueryContext,
+    history: Message[] = [],
+  ): Promise<string> {
+    return this.answer(context, history);
   }
 
   protected async ensureCommunities(graph: QueryGraph): Promise<Community[]> {
@@ -122,8 +139,8 @@ export abstract class BaseQueryProvider {
     return this.llmProvider.generate(buildCommunitySummaryMessages(materials.join("\n")));
   }
 
-  protected async answer(context: QueryContext): Promise<string> {
+  protected async answer(context: QueryContext, history: Message[] = []): Promise<string> {
     const materials = context.materials.join("\n\n");
-    return this.llmProvider.generate(buildQueryAnswerMessages(context.query, materials));
+    return this.llmProvider.generate(buildQueryAnswerMessages(context.query, materials, history));
   }
 }

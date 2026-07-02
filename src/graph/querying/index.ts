@@ -15,6 +15,8 @@ export type {
   QueryOptions,
   QueryPlan,
   QueryResult,
+  QueryRunOptions,
   QueryStrategy,
   QueryTuningOptions,
 } from "./types.js";
+export { normalizeQueryRunOptions } from "./types.js";

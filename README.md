@@ -46,21 +46,21 @@ console.log(result.materials);
 
 `GraphClient` is the main entry point.
 
-| Method                                     | Description                                                                                                              |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| `ingestFromPath(path, options?)`           | Extract entities from a file; optional `chunkSize` / `chunker`                                                           |
-| `ingestFromFile(file, options?)`           | Same as above, for `File` objects (e.g. in browsers)                                                                     |
-| `ingestFromFileURL(url, options?)`         | Download a document from a URL (PDF, DOCX, etc.) and ingest it                                                           |
-| `ingestFromWebsiteURL(url, options?)`      | Fetch an HTML page and ingest its text content                                                                           |
-| `ingestFromText(text, options?)`           | Extract entities from raw text or pre-chunked strings                                                                    |
-| `createNode` / `updateNode` / `deleteNode` | Strict create, partial update (`properties`, `unsetProperties`), and delete for nodes (also deletes incident edges)      |
-| `upsertNode` / `upsertEdge`                | Create or merge properties when the id already exists; returns `{ item, created }`                                       |
-| `createEdge` / `updateEdge` / `deleteEdge` | Strict create, update existing, and delete for edges                                                                     |
-| `getNode` / `getEdge`                      | Read by id (throws if missing)                                                                                           |
-| `hasNode` / `hasEdge`                      | Check existence by id                                                                                                    |
-| `getNeighbourhood(seeds, options?)`        | BFS expansion from seed node(s); default `maxHops` 1; optional `direction`, `topK`                                       |
-| `getShortestPaths(from, to, limit?)`       | Up to `limit` shortest simple paths between two nodes, ordered by hop count                                              |
-| `query(question, options?)`                | Natural-language query; returns `{ query, answer, materials, method }`. Options: `{ method?, topK?, seedK?, maxHops? }`. |
+| Method                                     | Description                                                                                                                        |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `ingestFromPath(path, options?)`           | Extract entities from a file; optional `chunkSize` / `chunker`                                                                     |
+| `ingestFromFile(file, options?)`           | Same as above, for `File` objects (e.g. in browsers)                                                                               |
+| `ingestFromFileURL(url, options?)`         | Download a document from a URL (PDF, DOCX, etc.) and ingest it                                                                     |
+| `ingestFromWebsiteURL(url, options?)`      | Fetch an HTML page and ingest its text content                                                                                     |
+| `ingestFromText(text, options?)`           | Extract entities from raw text or pre-chunked strings                                                                              |
+| `createNode` / `updateNode` / `deleteNode` | Strict create, partial update (`properties`, `unsetProperties`), and delete for nodes (also deletes incident edges)                |
+| `upsertNode` / `upsertEdge`                | Create or merge properties when the id already exists; returns `{ item, created }`                                                 |
+| `createEdge` / `updateEdge` / `deleteEdge` | Strict create, update existing, and delete for edges                                                                               |
+| `getNode` / `getEdge`                      | Read by id (throws if missing)                                                                                                     |
+| `hasNode` / `hasEdge`                      | Check existence by id                                                                                                              |
+| `getNeighbourhood(seeds, options?)`        | BFS expansion from seed node(s); default `maxHops` 1; optional `direction`, `topK`                                                 |
+| `getShortestPaths(from, to, limit?)`       | Up to `limit` shortest simple paths between two nodes, ordered by hop count                                                        |
+| `query(question, options?)`                | Natural-language query; returns `{ query, answer, materials, method }`. Options: `{ method?, topK?, seedK?, maxHops?, history? }`. |
 
 ### Storage providers
 
@@ -162,6 +162,23 @@ await client.query("How are Alice and Acme connected?", { method: "shortest_path
 // Combined routing (default)
 await client.query("What themes appear across the document?");
 ```
+
+### Multi-turn queries
+
+Pass prior `user` / `assistant` turns via `history` so follow-up questions keep conversational context. System messages in `history` are ignored.
+
+```ts
+const first = await client.query("Who works at Acme Corp?");
+
+const followUp = await client.query("What is her title?", {
+  history: [
+    { role: "user", content: first.query },
+    { role: "assistant", content: first.answer },
+  ],
+});
+```
+
+With `method: "combined"`, history is also passed to the strategy router so follow-ups like "tell me more about her" can pick better retrieval strategies.
 
 ### Query tuning
 

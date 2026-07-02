@@ -1,3 +1,4 @@
+import { Message } from "../../llm/types.js";
 import { BaseQueryProvider } from "./base-query-provider.js";
 import { LocalSearchQueryProvider } from "./local-search-query-provider.js";
 import { QueryContext, QueryGraph } from "./types.js";
@@ -6,9 +7,9 @@ import { expandNeighborhood, formatCommunity, nodeSearchItems, topKRelevant } fr
 export class DriftSearchQueryProvider extends BaseQueryProvider {
   private readonly localSearch = new LocalSearchQueryProvider(this.options);
 
-  async buildContext(query: string, graph: QueryGraph): Promise<QueryContext> {
+  async buildContext(query: string, graph: QueryGraph, history?: Message[]): Promise<QueryContext> {
     this.log.debug("Building drift search context");
-    const localContext = await this.localSearch.buildContext(query, graph);
+    const localContext = await this.localSearch.buildContext(query, graph, history);
     const communities = await this.ensureCommunities(graph);
     if (communities.length === 0) {
       return localContext;
