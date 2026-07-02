@@ -1,5 +1,5 @@
 import pg from "pg";
-import { BaseStorageProvider, StorageProviderOptions } from "./base-storage-provider.js";
+import { BaseStorageProvider, EdgeDirection, StorageProviderOptions } from "./base-storage-provider.js";
 import { Edge, Node } from "./types.js";
 import { PropertyValue } from "../graph/ontology.js";
 import { createLogger } from "../utils/logger.js";
@@ -252,6 +252,29 @@ export class PostgresStorageProvider extends BaseStorageProvider {
     const result = await this.pool.query<EdgeRow>(
       "SELECT id, type, from_id, to_id, properties, embedding FROM edges",
     );
+    return result.rows.map(rowToEdge);
+  }
+
+  async listEdgesForNode(nodeId: string, direction: EdgeDirection = "both"): Promise<Edge[]> {
+    await this.ready;
+    const result = await (async () => {
+      if (direction === "out") {
+        return this.pool.query<EdgeRow>(
+          "SELECT id, type, from_id, to_id, properties, embedding FROM edges WHERE from_id = $1",
+          [nodeId],
+        );
+      }
+      if (direction === "in") {
+        return this.pool.query<EdgeRow>(
+          "SELECT id, type, from_id, to_id, properties, embedding FROM edges WHERE to_id = $1",
+          [nodeId],
+        );
+      }
+      return this.pool.query<EdgeRow>(
+        "SELECT id, type, from_id, to_id, properties, embedding FROM edges WHERE from_id = $1 OR to_id = $1",
+        [nodeId],
+      );
+    })();
     return result.rows.map(rowToEdge);
   }
 

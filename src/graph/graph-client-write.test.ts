@@ -18,6 +18,13 @@ const ontology: Ontology = {
       to: "company",
       properties: { since: "number", title: "string" },
     },
+    {
+      id: "knows",
+      name: "Knows",
+      from: "person",
+      to: "person",
+      properties: {},
+    },
   ],
 };
 
@@ -188,5 +195,43 @@ describe("GraphClient write semantics", () => {
     expect(await client.hasNode("alice")).toBe(false);
     await expect(client.getEdge("e1")).rejects.toThrow('Edge with id "e1" not found');
     await expect(client.getEdge("e2")).rejects.toThrow('Edge with id "e2" not found');
+  });
+
+  it("returns directed neighbors without loading the full edge list", async () => {
+    const client = createClient();
+    await client.createNode({
+      id: "alice",
+      type: "person",
+      properties: { name: "Alice", nickname: "Al" },
+    });
+    await client.createNode({ id: "acme", type: "company", properties: { name: "Acme" } });
+    await client.createNode({
+      id: "bob",
+      type: "person",
+      properties: { name: "Bob", nickname: "B" },
+    });
+
+    await client.createEdge({
+      id: "e1",
+      type: "works_at",
+      from: "alice",
+      to: "acme",
+      properties: { since: 2020, title: "Engineer" },
+    });
+    await client.createEdge({
+      id: "e2",
+      type: "knows",
+      from: "bob",
+      to: "alice",
+      properties: {},
+    });
+
+    const outgoing = await client.getNeighbors("alice", { direction: "out" });
+    expect(outgoing.nodeIds).toEqual(["acme"]);
+    expect(outgoing.edges.map((edge) => edge.id)).toEqual(["e1"]);
+
+    const incoming = await client.getNeighbors("alice", { direction: "in" });
+    expect(incoming.nodeIds).toEqual(["bob"]);
+    expect(incoming.edges.map((edge) => edge.id)).toEqual(["e2"]);
   });
 });

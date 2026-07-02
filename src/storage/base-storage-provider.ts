@@ -4,6 +4,8 @@ import { Node, Edge } from "./types.js";
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- extended by provider-specific option types
 export interface StorageProviderOptions {}
 
+export type EdgeDirection = "in" | "out" | "both";
+
 export abstract class BaseStorageProvider {
   constructor(protected readonly options: StorageProviderOptions = {}) {}
 
@@ -21,13 +23,24 @@ export abstract class BaseStorageProvider {
   abstract upsertEdge(edge: Edge): Promise<void>;
   abstract deleteEdge(id: string): Promise<void>;
 
+  async listEdgesForNode(nodeId: string, direction: EdgeDirection = "both"): Promise<Edge[]> {
+    const edges = await this.listEdges();
+    return edges.filter((edge) => {
+      if (direction === "out") {
+        return edge.from === nodeId;
+      }
+      if (direction === "in") {
+        return edge.to === nodeId;
+      }
+      return edge.from === nodeId || edge.to === nodeId;
+    });
+  }
+
   /** Delete a node and all incident edges. */
   async deleteNode(id: string): Promise<void> {
-    const edges = await this.listEdges();
+    const edges = await this.listEdgesForNode(id);
     for (const edge of edges) {
-      if (edge.from === id || edge.to === id) {
-        await this.deleteEdge(edge.id);
-      }
+      await this.deleteEdge(edge.id);
     }
     await this.deleteNodeRecord(id);
   }

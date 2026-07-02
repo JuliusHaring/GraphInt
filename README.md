@@ -57,6 +57,7 @@ console.log(result.materials);
 | `getNode` / `getEdge`                      | Read by id (throws if missing)                                                                                           |
 | `tryGetNode` / `tryGetEdge`                | Read by id, returns `undefined` if missing                                                                               |
 | `hasNode` / `hasEdge`                      | Check existence by id                                                                                                    |
+| `getNeighbors(nodeId, options?)`           | 1-hop neighbors and connecting edges; `direction`: `in`, `out`, or `both`                                                |
 | `getShortestPaths(from, to, limit?)`       | Up to `limit` shortest simple paths between two nodes, ordered by hop count                                              |
 | `getBfsNeighborhood(seeds, options?)`      | BFS expansion from seed node(s); `maxHops` (default 2) and optional `topK` node cap                                      |
 | `query(question, options?)`                | Natural-language query; returns `{ query, answer, materials, method }`. Options: `{ method?, topK?, seedK?, maxHops? }`. |

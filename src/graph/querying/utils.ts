@@ -107,6 +107,67 @@ export function expandNeighborhoodBfs(
   return { nodeIds, edges: filteredEdges };
 }
 
+export type EdgeLookup = (nodeId: string) => Edge[] | Promise<Edge[]>;
+
+export async function expandNeighborhoodBfsWithLookup(
+  seedIds: Set<string> | Iterable<string>,
+  getEdgesForNode: EdgeLookup,
+  maxHops: number,
+  topK?: number,
+): Promise<GraphNeighborhood> {
+  const seeds = new Set(seedIds);
+  if (maxHops <= 0 || seeds.size === 0) {
+    const nodeIds = topK === undefined ? [...seeds] : [...seeds].slice(0, topK);
+    return { nodeIds, edges: [] };
+  }
+
+  const nodeIdSet = new Set(seeds);
+  const order: string[] = [...seeds];
+  const neighborhoodEdges = new Map<string, Edge>();
+  const visited = new Set(seeds);
+  const queue: Array<{ id: string; depth: number }> = [...seeds].map((id) => ({ id, depth: 0 }));
+
+  while (queue.length > 0) {
+    const { id, depth } = queue.shift()!;
+    if (depth >= maxHops) {
+      continue;
+    }
+
+    const edges = await getEdgesForNode(id);
+    for (const edge of edges) {
+      neighborhoodEdges.set(edge.id, edge);
+      const neighbor = edge.from === id ? edge.to : edge.from;
+
+      for (const nodeId of [edge.from, edge.to]) {
+        if (!nodeIdSet.has(nodeId) && (topK === undefined || order.length < topK)) {
+          nodeIdSet.add(nodeId);
+          order.push(nodeId);
+        }
+      }
+
+      if (!visited.has(neighbor)) {
+        if (topK !== undefined && order.length >= topK) {
+          continue;
+        }
+        visited.add(neighbor);
+        queue.push({ id: neighbor, depth: depth + 1 });
+      }
+    }
+
+    if (topK !== undefined && order.length >= topK) {
+      break;
+    }
+  }
+
+  const nodeIds = topK === undefined ? [...nodeIdSet] : order.slice(0, topK);
+  const included = new Set(nodeIds);
+  const filteredEdges = [...neighborhoodEdges.values()].filter(
+    (edge) => included.has(edge.from) && included.has(edge.to),
+  );
+
+  return { nodeIds, edges: filteredEdges };
+}
+
 export type GraphPath = {
   nodeIds: string[];
   edges: Edge[];
@@ -144,6 +205,63 @@ export function shortestPaths(
       }
 
       const visited = new Set(path.nodeIds);
+
+      for (const edge of edges) {
+        if (edge.from !== currentId && edge.to !== currentId) {
+          continue;
+        }
+
+        const neighbor = edge.from === currentId ? edge.to : edge.from;
+        if (visited.has(neighbor)) {
+          continue;
+        }
+
+        nextFrontier.push({
+          nodeIds: [...path.nodeIds, neighbor],
+          edges: [...path.edges, edge],
+        });
+      }
+    }
+
+    frontier = nextFrontier;
+  }
+
+  return results;
+}
+
+export async function shortestPathsWithLookup(
+  startId: string,
+  endId: string,
+  getEdgesForNode: EdgeLookup,
+  limit: number,
+): Promise<GraphPath[]> {
+  if (limit <= 0) {
+    return [];
+  }
+
+  if (startId === endId) {
+    return [{ nodeIds: [startId], edges: [] }];
+  }
+
+  const results: GraphPath[] = [];
+  let frontier: GraphPath[] = [{ nodeIds: [startId], edges: [] }];
+
+  while (frontier.length > 0 && results.length < limit) {
+    const nextFrontier: GraphPath[] = [];
+
+    for (const path of frontier) {
+      const currentId = path.nodeIds[path.nodeIds.length - 1];
+
+      if (currentId === endId) {
+        results.push(path);
+        if (results.length >= limit) {
+          return results;
+        }
+        continue;
+      }
+
+      const visited = new Set(path.nodeIds);
+      const edges = await getEdgesForNode(currentId);
 
       for (const edge of edges) {
         if (edge.from !== currentId && edge.to !== currentId) {

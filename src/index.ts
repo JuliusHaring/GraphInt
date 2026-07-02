@@ -6,6 +6,8 @@ export type {
   GraphQueryResult,
   ListEdgesOptions,
   ListNodesOptions,
+  NeighborsOptions,
+  NeighborsResult,
   SearchResult,
   SemanticSearchOptions,
   UpdateEdgeInput,
@@ -41,7 +43,7 @@ export { GeminiLLMProvider } from "./llm/gemini-llm-provider.js";
 export { OpenAILLMProvider } from "./llm/openai-llm-provider.js";
 
 export { BaseStorageProvider } from "./storage/base-storage-provider.js";
-export type { StorageProviderOptions } from "./storage/base-storage-provider.js";
+export type { StorageProviderOptions, EdgeDirection } from "./storage/base-storage-provider.js";
 export { MemoryStorageProvider } from "./storage/memory-storage-provider.js";
 export { PostgresStorageProvider } from "./storage/postgres-storage-provider.js";
 export type { PostgresStorageProviderOptions } from "./storage/postgres-storage-provider.js";

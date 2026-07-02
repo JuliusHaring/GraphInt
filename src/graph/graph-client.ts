@@ -1,5 +1,6 @@
 import { BaseLLMProvider } from "../llm/base-llm-provider.js";
 import { BaseStorageProvider } from "../storage/base-storage-provider.js";
+import type { EdgeDirection } from "../storage/base-storage-provider.js";
 import {
   BaseQueryProvider,
   BasicSearchQueryProvider,
@@ -33,9 +34,9 @@ import {
   GraphNeighborhood,
   GraphPath,
   edgeSearchItems,
-  expandNeighborhoodBfs,
+  expandNeighborhoodBfsWithLookup,
   nodeSearchItems,
-  shortestPaths,
+  shortestPathsWithLookup,
   topKBySimilarity,
 } from "./querying/utils.js";
 import {
@@ -95,6 +96,15 @@ export type UpdateEdgeInput = {
 export type UpsertResult<T> = {
   item: T;
   created: boolean;
+};
+
+export type NeighborsOptions = {
+  direction?: EdgeDirection;
+};
+
+export type NeighborsResult = {
+  nodeIds: string[];
+  edges: Edge[];
 };
 
 export type GraphQueryResult = QueryResult & {
@@ -322,10 +332,19 @@ export class GraphClient {
     return this.storageProvider.deleteEdge(id);
   }
 
+  async getNeighbors(nodeId: string, options?: NeighborsOptions): Promise<NeighborsResult> {
+    const direction = options?.direction ?? "both";
+    log.info("Getting neighbors", { nodeId, direction });
+    const edges = await this.storageProvider.listEdgesForNode(nodeId, direction);
+    const nodeIds = [
+      ...new Set(edges.map((edge) => (edge.from === nodeId ? edge.to : edge.from))),
+    ];
+    return { nodeIds, edges };
+  }
+
   async getShortestPaths(from: string, to: string, limit = 1): Promise<GraphPath[]> {
     log.info("Finding shortest paths", { from, to, limit });
-    const edges = await this.storageProvider.listEdges();
-    return shortestPaths(from, to, edges, limit);
+    return shortestPathsWithLookup(from, to, (nodeId) => this.storageProvider.listEdgesForNode(nodeId), limit);
   }
 
   async getBfsNeighborhood(
@@ -339,8 +358,12 @@ export class GraphClient {
       maxHops,
       topK: options?.topK,
     });
-    const edges = await this.storageProvider.listEdges();
-    return expandNeighborhoodBfs(seedIds, edges, maxHops, options?.topK);
+    return expandNeighborhoodBfsWithLookup(
+      seedIds,
+      (nodeId) => this.storageProvider.listEdgesForNode(nodeId),
+      maxHops,
+      options?.topK,
+    );
   }
 
   async query(input: string, options: QueryOptions = {}): Promise<GraphQueryResult> {
