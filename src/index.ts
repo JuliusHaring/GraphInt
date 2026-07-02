@@ -21,6 +21,7 @@ export type {
 export { OntologySchema } from "./graph/ontology.js";
 
 export type { QueryMethod } from "./graph/querying/types.js";
+export type { GraphNeighborhood, GraphPath } from "./graph/querying/utils.js";
 
 export { BaseLLMProvider } from "./llm/base-llm-provider.js";
 export type { LLMProviderOptions } from "./llm/base-llm-provider.js";

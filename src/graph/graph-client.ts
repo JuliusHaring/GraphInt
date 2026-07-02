@@ -23,6 +23,12 @@ import {
 import { LLMExtractor } from "./ingestion/llm-extractor.js";
 import { TextExtractor } from "./ingestion/text-extractor.js";
 import { IngestionResult } from "./ingestion/types.js";
+import {
+  GraphNeighborhood,
+  GraphPath,
+  expandNeighborhoodBfs,
+  shortestPaths,
+} from "./querying/utils.js";
 import { createLogger } from "../utils/logger.js";
 
 const log = createLogger("GraphClient");
@@ -177,6 +183,27 @@ export class GraphClient {
   deleteEdge(id: string): Promise<void> {
     log.info("Deleting edge", { id });
     return this.storageProvider.deleteEdge(id);
+  }
+
+  async getShortestPaths(from: string, to: string, limit = 1): Promise<GraphPath[]> {
+    log.info("Finding shortest paths", { from, to, limit });
+    const edges = await this.storageProvider.listEdges();
+    return shortestPaths(from, to, edges, limit);
+  }
+
+  async getBfsNeighborhood(
+    seeds: string | string[],
+    options?: { maxHops?: number; topK?: number },
+  ): Promise<GraphNeighborhood> {
+    const seedIds = new Set(Array.isArray(seeds) ? seeds : [seeds]);
+    const maxHops = options?.maxHops ?? 2;
+    log.info("Expanding BFS neighborhood", {
+      seeds: seedIds.size,
+      maxHops,
+      topK: options?.topK,
+    });
+    const edges = await this.storageProvider.listEdges();
+    return expandNeighborhoodBfs(seedIds, edges, maxHops, options?.topK);
   }
 
   async query(input: string, method: QueryMethod = "combined"): Promise<string> {

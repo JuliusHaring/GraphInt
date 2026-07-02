@@ -5,6 +5,7 @@ import {
   expandNeighborhoodBfs,
   formatPathDescription,
   shortestPath,
+  shortestPaths,
 } from "./utils.js";
 
 const edges: Edge[] = [
@@ -24,15 +25,25 @@ describe("expandNeighborhoodBfs", () => {
   it("reaches 2-hop nodes when maxHops is 2", () => {
     const neighborhood = expandNeighborhoodBfs(new Set(["aaron"]), edges, 2);
 
-    expect(neighborhood.nodeIds).toEqual(new Set(["aaron", "nadab", "exodus", "leviticus"]));
+    expect(new Set(neighborhood.nodeIds)).toEqual(
+      new Set(["aaron", "nadab", "exodus", "leviticus"]),
+    );
     expect(neighborhood.edges.map((edge) => edge.id).sort()).toEqual(["e1", "e2", "e3"]);
   });
 
   it("does not expand beyond maxHops", () => {
     const neighborhood = expandNeighborhoodBfs(new Set(["moses"]), edges, 1);
 
-    expect(neighborhood.nodeIds).toEqual(new Set(["moses", "commandments", "israelites"]));
+    expect(new Set(neighborhood.nodeIds)).toEqual(new Set(["moses", "commandments", "israelites"]));
     expect(neighborhood.edges.map((edge) => edge.id).sort()).toEqual(["e4", "e5"]);
+  });
+
+  it("limits nodes to topK in BFS discovery order", () => {
+    const neighborhood = expandNeighborhoodBfs(new Set(["aaron"]), edges, 2, 2);
+
+    expect(neighborhood.nodeIds).toHaveLength(2);
+    expect(neighborhood.nodeIds[0]).toBe("aaron");
+    expect(new Set(neighborhood.nodeIds).size).toBe(2);
   });
 });
 
@@ -55,6 +66,34 @@ describe("shortestPath", () => {
 
   it("returns undefined when no path exists", () => {
     expect(shortestPath("leviticus", "israelites", edges)).toBeUndefined();
+  });
+});
+
+describe("shortestPaths", () => {
+  const diamondEdges: Edge[] = [
+    { id: "e1", type: "link", from: "a", to: "b", properties: {} },
+    { id: "e2", type: "link", from: "a", to: "c", properties: {} },
+    { id: "e3", type: "link", from: "b", to: "d", properties: {} },
+    { id: "e4", type: "link", from: "c", to: "d", properties: {} },
+    { id: "e5", type: "link", from: "b", to: "c", properties: {} },
+  ];
+
+  it("returns multiple equally short paths before longer ones", () => {
+    const paths = shortestPaths("a", "d", diamondEdges, 3);
+
+    expect(paths).toHaveLength(3);
+    expect(paths[0].nodeIds).toEqual(["a", "b", "d"]);
+    expect(paths[1].nodeIds).toEqual(["a", "c", "d"]);
+    expect(paths[2].nodeIds).toEqual(["a", "b", "c", "d"]);
+  });
+
+  it("respects the limit", () => {
+    expect(shortestPaths("a", "d", diamondEdges, 1)).toHaveLength(1);
+    expect(shortestPaths("a", "d", diamondEdges, 0)).toEqual([]);
+  });
+
+  it("returns an empty array when no path exists", () => {
+    expect(shortestPaths("leviticus", "israelites", edges, 3)).toEqual([]);
   });
 });
 

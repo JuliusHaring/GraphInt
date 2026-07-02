@@ -135,7 +135,7 @@ describe("BfsSearchQueryProvider", () => {
     const context = await provider.buildContext("Which books mention Aaron's sons?", graph);
     const oneHop = expandNeighborhood(new Set(["aaron"]), edges);
 
-    expect(oneHop.nodeIds.has("leviticus")).toBe(false);
+    expect(oneHop.nodeIds.includes("leviticus")).toBe(false);
     expect(context.materials.join("\n")).not.toContain("Leviticus");
   });
 });

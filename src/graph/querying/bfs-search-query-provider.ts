@@ -19,11 +19,11 @@ export class BfsSearchQueryProvider extends BaseQueryProvider {
       this.seedK,
     );
     const seedIds = new Set(seeds.map((seed) => seed.id));
-    const neighborhood = expandNeighborhoodBfs(seedIds, graph.edges, this.maxHops);
+    const neighborhood = expandNeighborhoodBfs(seedIds, graph.edges, this.maxHops, this.topK);
     this.log.debug("BFS neighborhood expanded", {
       seeds: seedIds.size,
       maxHops: this.maxHops,
-      nodes: neighborhood.nodeIds.size,
+      nodes: neighborhood.nodeIds.length,
       edges: neighborhood.edges.length,
     });
 

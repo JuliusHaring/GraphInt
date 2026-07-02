@@ -6,7 +6,7 @@ import {
   formatNode,
   formatPathDescription,
   nodeSearchItems,
-  shortestPath,
+  shortestPaths,
   topKBySimilarity,
 } from "./utils.js";
 
@@ -28,17 +28,15 @@ export class ShortestPathSearchQueryProvider extends BaseQueryProvider {
 
     for (let left = 0; left < seedIds.length; left++) {
       for (let right = left + 1; right < seedIds.length; right++) {
-        const path = shortestPath(seedIds[left], seedIds[right], graph.edges);
-        if (!path) {
-          continue;
-        }
-
-        materials.push(formatPathDescription(nodesById, path));
-        for (const nodeId of path.nodeIds) {
-          collectedNodeIds.add(nodeId);
-        }
-        for (const edge of path.edges) {
-          collectedEdges.set(edge.id, edge);
+        const paths = shortestPaths(seedIds[left], seedIds[right], graph.edges, this.topK);
+        for (const path of paths) {
+          materials.push(formatPathDescription(nodesById, path));
+          for (const nodeId of path.nodeIds) {
+            collectedNodeIds.add(nodeId);
+          }
+          for (const edge of path.edges) {
+            collectedEdges.set(edge.id, edge);
+          }
         }
       }
     }

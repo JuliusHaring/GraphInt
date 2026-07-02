@@ -23,8 +23,9 @@ export class DriftSearchQueryProvider extends BaseQueryProvider {
     );
     const seedIds = new Set(seeds.map((seed) => seed.id));
     const neighborhood = expandNeighborhood(seedIds, graph.edges);
+    const neighborhoodIds = new Set(neighborhood.nodeIds);
     const relevantCommunities = communities.filter((community) =>
-      community.nodeIds.some((nodeId) => neighborhood.nodeIds.has(nodeId)),
+      community.nodeIds.some((nodeId) => neighborhoodIds.has(nodeId)),
     );
 
     const communityMaterials = relevantCommunities.map((community) =>

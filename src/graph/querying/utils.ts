@@ -36,26 +36,32 @@ export function topKBySimilarity(
     .slice(0, topK);
 }
 
-export function expandNeighborhood(
-  seedIds: Set<string>,
-  edges: Edge[],
-): { nodeIds: Set<string>; edges: Edge[] } {
+export function expandNeighborhood(seedIds: Set<string>, edges: Edge[]): GraphNeighborhood {
   return expandNeighborhoodBfs(seedIds, edges, 1);
 }
 
+export type GraphNeighborhood = {
+  nodeIds: string[];
+  edges: Edge[];
+};
+
 export function expandNeighborhoodBfs(
-  seedIds: Set<string>,
+  seedIds: Set<string> | Iterable<string>,
   edges: Edge[],
   maxHops: number,
-): { nodeIds: Set<string>; edges: Edge[] } {
-  if (maxHops <= 0 || seedIds.size === 0) {
-    return { nodeIds: new Set(seedIds), edges: [] };
+  topK?: number,
+): GraphNeighborhood {
+  const seeds = new Set(seedIds);
+  if (maxHops <= 0 || seeds.size === 0) {
+    const nodeIds = topK === undefined ? [...seeds] : [...seeds].slice(0, topK);
+    return { nodeIds, edges: [] };
   }
 
-  const nodeIds = new Set(seedIds);
+  const nodeIdSet = new Set(seeds);
+  const order: string[] = [...seeds];
   const neighborhoodEdges = new Map<string, Edge>();
-  const visited = new Set(seedIds);
-  const queue: Array<{ id: string; depth: number }> = [...seedIds].map((id) => ({ id, depth: 0 }));
+  const visited = new Set(seeds);
+  const queue: Array<{ id: string; depth: number }> = [...seeds].map((id) => ({ id, depth: 0 }));
 
   while (queue.length > 0) {
     const { id, depth } = queue.shift()!;
@@ -70,17 +76,35 @@ export function expandNeighborhoodBfs(
 
       neighborhoodEdges.set(edge.id, edge);
       const neighbor = edge.from === id ? edge.to : edge.from;
-      nodeIds.add(edge.from);
-      nodeIds.add(edge.to);
+
+      for (const nodeId of [edge.from, edge.to]) {
+        if (!nodeIdSet.has(nodeId) && (topK === undefined || order.length < topK)) {
+          nodeIdSet.add(nodeId);
+          order.push(nodeId);
+        }
+      }
 
       if (!visited.has(neighbor)) {
+        if (topK !== undefined && order.length >= topK) {
+          continue;
+        }
         visited.add(neighbor);
         queue.push({ id: neighbor, depth: depth + 1 });
       }
     }
+
+    if (topK !== undefined && order.length >= topK) {
+      break;
+    }
   }
 
-  return { nodeIds, edges: [...neighborhoodEdges.values()] };
+  const nodeIds = topK === undefined ? [...nodeIdSet] : order.slice(0, topK);
+  const included = new Set(nodeIds);
+  const filteredEdges = [...neighborhoodEdges.values()].filter(
+    (edge) => included.has(edge.from) && included.has(edge.to),
+  );
+
+  return { nodeIds, edges: filteredEdges };
 }
 
 export type GraphPath = {
@@ -88,42 +112,64 @@ export type GraphPath = {
   edges: Edge[];
 };
 
-export function shortestPath(startId: string, endId: string, edges: Edge[]): GraphPath | undefined {
+export function shortestPaths(
+  startId: string,
+  endId: string,
+  edges: Edge[],
+  limit: number,
+): GraphPath[] {
+  if (limit <= 0) {
+    return [];
+  }
+
   if (startId === endId) {
-    return { nodeIds: [startId], edges: [] };
+    return [{ nodeIds: [startId], edges: [] }];
   }
 
-  const visited = new Set<string>([startId]);
-  const queue: Array<{ id: string; nodeIds: string[]; pathEdges: Edge[] }> = [
-    { id: startId, nodeIds: [startId], pathEdges: [] },
-  ];
+  const results: GraphPath[] = [];
+  let frontier: GraphPath[] = [{ nodeIds: [startId], edges: [] }];
 
-  while (queue.length > 0) {
-    const current = queue.shift()!;
+  while (frontier.length > 0 && results.length < limit) {
+    const nextFrontier: GraphPath[] = [];
 
-    for (const edge of edges) {
-      if (edge.from !== current.id && edge.to !== current.id) {
+    for (const path of frontier) {
+      const currentId = path.nodeIds[path.nodeIds.length - 1];
+
+      if (currentId === endId) {
+        results.push(path);
+        if (results.length >= limit) {
+          return results;
+        }
         continue;
       }
 
-      const neighbor = edge.from === current.id ? edge.to : edge.from;
-      if (visited.has(neighbor)) {
-        continue;
+      const visited = new Set(path.nodeIds);
+
+      for (const edge of edges) {
+        if (edge.from !== currentId && edge.to !== currentId) {
+          continue;
+        }
+
+        const neighbor = edge.from === currentId ? edge.to : edge.from;
+        if (visited.has(neighbor)) {
+          continue;
+        }
+
+        nextFrontier.push({
+          nodeIds: [...path.nodeIds, neighbor],
+          edges: [...path.edges, edge],
+        });
       }
-
-      const nodeIds = [...current.nodeIds, neighbor];
-      const pathEdges = [...current.pathEdges, edge];
-
-      if (neighbor === endId) {
-        return { nodeIds, edges: pathEdges };
-      }
-
-      visited.add(neighbor);
-      queue.push({ id: neighbor, nodeIds, pathEdges });
     }
+
+    frontier = nextFrontier;
   }
 
-  return undefined;
+  return results;
+}
+
+export function shortestPath(startId: string, endId: string, edges: Edge[]): GraphPath | undefined {
+  return shortestPaths(startId, endId, edges, 1)[0];
 }
 
 export function formatPathDescription(nodesById: Map<string, Node>, path: GraphPath): string {

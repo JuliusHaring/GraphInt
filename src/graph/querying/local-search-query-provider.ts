@@ -22,7 +22,7 @@ export class LocalSearchQueryProvider extends BaseQueryProvider {
     const neighborhood = expandNeighborhood(seedIds, graph.edges);
     this.log.debug("Local neighborhood expanded", {
       seeds: seedIds.size,
-      nodes: neighborhood.nodeIds.size,
+      nodes: neighborhood.nodeIds.length,
       edges: neighborhood.edges.length,
     });
     const nodesById = new Map(graph.nodes.map((node) => [node.id, node]));
