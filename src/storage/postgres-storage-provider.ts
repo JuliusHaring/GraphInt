@@ -1,5 +1,9 @@
 import pg from "pg";
-import { BaseStorageProvider, EdgeDirection, StorageProviderOptions } from "./base-storage-provider.js";
+import {
+  BaseStorageProvider,
+  EdgeDirection,
+  StorageProviderOptions,
+} from "./base-storage-provider.js";
 import { Edge, Node } from "./types.js";
 import { PropertyValue } from "../graph/ontology.js";
 import { createLogger } from "../utils/logger.js";

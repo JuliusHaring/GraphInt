@@ -51,7 +51,7 @@ console.log(result.materials);
 | `ingestFromPath(path, options?)`           | Extract entities from a file; optional `chunkSize` / `chunker`                                                           |
 | `ingestFromFile(file, options?)`           | Same as above, for `File` objects (e.g. in browsers)                                                                     |
 | `ingestFromText(text, options?)`           | Extract entities from raw text or pre-chunked strings                                                                    |
-| `createNode` / `updateNode` / `deleteNode` | Strict create, partial update (`properties`, `unsetProperties`), and delete for nodes (also deletes incident edges) |
+| `createNode` / `updateNode` / `deleteNode` | Strict create, partial update (`properties`, `unsetProperties`), and delete for nodes (also deletes incident edges)      |
 | `upsertNode` / `upsertEdge`                | Create or merge properties when the id already exists; returns `{ item, created }`                                       |
 | `createEdge` / `updateEdge` / `deleteEdge` | Strict create, update existing, and delete for edges                                                                     |
 | `getNode` / `getEdge`                      | Read by id (throws if missing)                                                                                           |

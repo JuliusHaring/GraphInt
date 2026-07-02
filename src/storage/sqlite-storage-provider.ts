@@ -1,5 +1,9 @@
 import sqlite3 from "sqlite3";
-import { BaseStorageProvider, EdgeDirection, StorageProviderOptions } from "./base-storage-provider.js";
+import {
+  BaseStorageProvider,
+  EdgeDirection,
+  StorageProviderOptions,
+} from "./base-storage-provider.js";
 import { Edge, Node } from "./types.js";
 import { createLogger } from "../utils/logger.js";
 
@@ -277,8 +281,7 @@ export class SqliteStorageProvider extends BaseStorageProvider {
 
   async listEdgesForNode(nodeId: string, direction: EdgeDirection = "both"): Promise<Edge[]> {
     await this.ready;
-    const select =
-      "SELECT id, type, from_id, to_id, properties, embedding FROM edges WHERE ";
+    const select = "SELECT id, type, from_id, to_id, properties, embedding FROM edges WHERE ";
     const rows = await (async () => {
       if (direction === "out") {
         return all<EdgeRow>(this.db, `${select}from_id = ?`, [nodeId]);

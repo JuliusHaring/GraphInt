@@ -349,15 +349,18 @@ export class GraphClient {
     const direction = options?.direction ?? "both";
     log.info("Getting neighbors", { nodeId, direction });
     const edges = await this.storageProvider.listEdgesForNode(nodeId, direction);
-    const nodeIds = [
-      ...new Set(edges.map((edge) => (edge.from === nodeId ? edge.to : edge.from))),
-    ];
+    const nodeIds = [...new Set(edges.map((edge) => (edge.from === nodeId ? edge.to : edge.from)))];
     return { nodeIds, edges };
   }
 
   async getShortestPaths(from: string, to: string, limit = 1): Promise<GraphPath[]> {
     log.info("Finding shortest paths", { from, to, limit });
-    return shortestPathsWithLookup(from, to, (nodeId) => this.storageProvider.listEdgesForNode(nodeId), limit);
+    return shortestPathsWithLookup(
+      from,
+      to,
+      (nodeId) => this.storageProvider.listEdgesForNode(nodeId),
+      limit,
+    );
   }
 
   async getBfsNeighborhood(

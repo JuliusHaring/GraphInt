@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0](https://github.com/JuliusHaring/GraphInt/compare/v0.1.2...v0.2.0) (2026-07-02)
+
+### Features
+
+- add configurable ingestion chunking ([e0522fe](https://github.com/JuliusHaring/GraphInt/commit/e0522fed4c1d702c94812a8cf31674827166834f))
+- add neighbor lookup and efficient graph traversal ([cc2c21f](https://github.com/JuliusHaring/GraphInt/commit/cc2c21f28c5232a2d6ccde0875c38cac4d9aa74b))
+- expose node and edge listing ([daa6f67](https://github.com/JuliusHaring/GraphInt/commit/daa6f67f567b0c51a48d9ac47cfb13f8db5a193c))
+- make query configurable ([70782bf](https://github.com/JuliusHaring/GraphInt/commit/70782bff525f59f4ade880ba744f872a1df47293))
+- make query return rich object ([fc93312](https://github.com/JuliusHaring/GraphInt/commit/fc9331247a124bee1fd2bed47f1b9b13bc8bdc71))
+- rename edit to update for consistent write API ([1109d2f](https://github.com/JuliusHaring/GraphInt/commit/1109d2f70a8dcbbb218059a15b4fe5733704f92d))
+- support property removal on node and edge updates ([395692b](https://github.com/JuliusHaring/GraphInt/commit/395692ba08d2c78dab4829a50cdab8f366f3e0e4))
+
 ## [0.1.2](https://github.com/JuliusHaring/GraphInt/compare/v0.1.1...v0.1.2) (2026-07-02)
 
 ### Features
